@@ -27,9 +27,12 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
 <div id="weekPanel" hidden><div class="card week" id="week"></div></div>
 <div id="monthPanel" hidden><div class="card"><div class="grid"><div><label>MONTH</label><input type="month" id="monthPick"></div><div><label>SELECTED DATE</label><div id="monthInfo" class="muted"></div></div></div></div><div class="card cal" id="calendar"></div></div>
 <div class="card">
- <div class="actions"><button class="primary" id="add">+ Add employee</button><button class="btn" id="copy">Copy day to all days</button><button class="btn" id="importBtn">Import starter/backup</button><button class="btn" id="exportBtn">Export backup</button></div>
+ <div class="actions"><button class="primary" id="add">+ Add employee</button><button class="btn" id="manageBtn">Modify employees</button><button class="btn" id="copy">Copy day to weekdays</button><button class="btn" id="clearDay">Clear this day</button><button class="btn" id="clearAll">Clear all schedules</button><button class="btn" id="importBtn">Import starter/backup</button><button class="btn" id="exportBtn">Export backup</button></div>
  <input type="file" id="file" accept=".json,application/json" hidden>
- <div id="editor"></div>
+ <div id="managePanel" hidden>
+   <div style="margin-top:14px"><b>Modify Employees</b><div class="muted">Edit name, position, and today's shift here.</div></div>
+   <div id="editor"></div>
+ </div>
 </div>
 <p class="muted">Schedules are saved in this browser on this device. The public GitHub app contains no employee names.</p>
 </main>
@@ -46,7 +49,7 @@ function render(){
  $("views").innerHTML=["Day","Week","Month"].map(v=>`<button class="pill ${v==viewMode?"on":""}" data-v="${v}">${v}</button>`).join("");
  $("views").querySelectorAll("button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
  $("dayPanel").hidden=viewMode!="Day";$("weekPanel").hidden=viewMode!="Week";$("monthPanel").hidden=viewMode!="Month";
- $("days").innerHTML=D.map(d=>`<button class="pill ${d==day?"on":""}" data-d="${d}">${d}</button>`).join("");
+ $("days").innerHTML=D.map(d=>`<button class="pill ${d==day?"on":""}" data-d="${d}">${d}${(d=="Sat"||d=="Sun")?" • CLOSED":""}</button>`).join("");
  $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
  let t=$("time").value||"16:00", rows=(state.schedule[day]||[]).filter(x=>t>=x.start&&t<x.end);
  $("count").textContent=rows.length;$("staff").innerHTML=rows.length?rows.map(x=>`<div class="person"><div><div class="name">${esc(x.name)}</div><div class="muted">${esc(x.role)}</div></div><b>${fmt(x.start)}–${fmt(x.end)}</b></div>`).join(""):'<span class="muted">No employees scheduled at this time.</span>';
@@ -58,9 +61,12 @@ function renderEditor(){let rows=state.schedule[day]||[];$("editor").innerHTML=r
 }
 function edit(i){let old=state.schedule[day][i].name,n=$("n"+i).value.trim(),r=$("r"+i).value.trim();if(!n)return alert("Enter a name");state.schedule[day][i]={name:n,role:r,start:$("s"+i).value,end:$("e"+i).value};let e=state.employees.find(x=>x.name==old);if(e){e.name=n;e.role=r} D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));save();render()}
 function del(i){if(confirm("Remove this employee from "+day+"?")){state.schedule[day].splice(i,1);save();render()}}
+$("manageBtn").onclick=()=>{let p=$("managePanel");p.hidden=!p.hidden;$("manageBtn").textContent=p.hidden?"Modify employees":"Hide employee editor";if(!p.hidden)p.scrollIntoView({behavior:"smooth",block:"start"})};
 $("add").onclick=()=>{let n=prompt("Employee name");if(!n)return;let r=prompt("Position","Staff")||"Staff";if(!state.employees.some(x=>x.name==n))state.employees.push({name:n,role:r});state.schedule[day].push({name:n,role:r,start:"09:00",end:"17:00"});save();render()};
-$("copy").onclick=()=>{if(confirm("Copy "+day+" schedule to all days?")){D.forEach(d=>state.schedule[d]=JSON.parse(JSON.stringify(state.schedule[day])));save();render()}};
-$("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=JSON.parse(rd.result);if(!x.schedule||!x.employees)throw 0;state=x;save();render();alert("Imported successfully")}catch{alert("That backup file is not valid.")}};rd.readAsText(f)};
+$("copy").onclick=()=>{if(day=="Sat"||day=="Sun")return alert("Saturday and Sunday are closed.");if(confirm("Copy "+day+" schedule to Monday through Friday?")){["Mon","Tue","Wed","Thu","Fri"].forEach(d=>state.schedule[d]=JSON.parse(JSON.stringify(state.schedule[day])));state.schedule.Sat=[];state.schedule.Sun=[];save();render()}};
+$("clearDay").onclick=()=>{if(confirm("Remove every shift from "+day+"? Employee names will be kept.")){state.schedule[day]=[];save();render()}};
+$("clearAll").onclick=()=>{if(confirm("Clear ALL schedules Monday through Sunday? Employee names will be kept.")){D.forEach(d=>state.schedule[d]=[]);save();render();alert("All schedules cleared. Employee names were kept.")}};
+$("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=JSON.parse(rd.result);if(!x.schedule||!x.employees)throw 0;state=x;state.schedule.Sat=[];state.schedule.Sun=[];save();render();alert("Imported successfully. Saturday and Sunday are closed.")}catch{alert("That backup file is not valid.")}};rd.readAsText(f)};
 $("exportBtn").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download="tulan-schedule-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 function renderCalendar(){let v=$("monthPick").value;if(!v)return;let [y,m]=v.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),offset=(first.getDay()+6)%7,html="";["M","T","W","T","F","S","S"].forEach(x=>html+=`<div class="muted" style="text-align:center"><b>${x}</b></div>`);for(let i=0;i<offset;i++)html+="<div></div>";for(let n=1;n<=last.getDate();n++){let dow=(new Date(y,m-1,n).getDay()+6)%7,d=D[dow],cnt=(state.schedule[d]||[]).length;html+=`<button class="cell" data-date="${n}" type="button"><b>${n}</b><span class="badge">${cnt} staff</span></button>`}$("calendar").innerHTML=html;$("calendar").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("monthInfo").textContent=v+"-"+String(b.dataset.date).padStart(2,"0")+" • "+D[(new Date(y,m-1,+b.dataset.date).getDay()+6)%7]})}
 let now=new Date();$("monthPick").value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");$("monthPick").onchange=renderCalendar;
