@@ -52,7 +52,8 @@ function render(){
  $("days").innerHTML=D.map(d=>`<button class="pill ${d==day?"on":""}" data-d="${d}">${d}${(d=="Sat"||d=="Sun")?" • CLOSED":""}</button>`).join("");
  $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
  let t=$("time").value||"16:00", rows=(state.schedule[day]||[]).filter(x=>t>=x.start&&t<x.end);
- $("count").textContent=rows.length;$("staff").innerHTML=rows.length?rows.map(x=>`<div class="person"><div><div class="name">${esc(x.name)}</div><div class="muted">${esc(x.role)}</div></div><b>${fmt(x.start)}–${fmt(x.end)}</b></div>`).join(""):'<span class="muted">No employees scheduled at this time.</span>';
+ $("count").textContent=rows.length;$("staff").innerHTML=rows.length?rows.map(x=>`<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center"><div><div class="name">${esc(x.name)}</div><div class="muted">${esc(x.role)}</div></div><b>${fmt(x.start)}–${fmt(x.end)}</b></button>`).join(""):'<span class="muted">No employees scheduled at this time.</span>';
+ $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>{window.editEmployeeName=b.dataset.person;$("managePanel").hidden=false;$("manageBtn").textContent="Hide employee editor";renderEditor();$("managePanel").scrollIntoView({behavior:"smooth",block:"start"})});
  $("week").innerHTML="<table><thead><tr><th>Employee</th>"+D.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody>"+state.employees.map(e=>`<tr><th>${esc(e.name)}<div class="muted">${esc(e.role)}</div></th>`+D.map(d=>{let s=(state.schedule[d]||[]).find(x=>x.name==e.name);return `<td>${s?fmt(s.start)+"–"+fmt(s.end):"—"}</td>`}).join("")+"</tr>").join("")+"</tbody></table>";
  renderCalendar(); renderEditor();
 }
