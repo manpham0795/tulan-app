@@ -1,60 +1,68 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>Tulan Staffing</title>
+<meta name="apple-mobile-web-app-capable" content="yes"><title>Tulan Staffing</title>
 <style>
 :root{--p:#5b2490;--bg:#f6f4f8;--card:#fff;--line:#e3dfe8;--muted:#716a78}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#21172d}
-header{background:#fff;padding:18px 16px 12px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
-h1{font-size:24px;margin:0 0 12px}.days{display:flex;gap:6px;overflow:auto}.day{padding:9px 12px;border:1px solid var(--line);border-radius:20px;background:white;font-weight:700}.day.on{background:var(--p);color:white}
-main{max-width:720px;margin:auto;padding:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
-label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0 6px}select,input{width:100%;font:inherit;padding:11px;border:1px solid #d8d1df;border-radius:10px;background:#fff}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.big{font-size:32px;font-weight:850;color:var(--p)}
-.person{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.person:last-child{border:0}.name{font-weight:800}.role,.small{font-size:13px;color:var(--muted)}
-button{font:inherit}.primary{border:0;border-radius:11px;background:var(--p);color:#fff;font-weight:800;padding:12px}.secondary{border:1px solid var(--p);border-radius:11px;background:#fff;color:var(--p);font-weight:800;padding:11px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}.edit{padding:12px 0;border-bottom:1px solid var(--line)}.edit .grid{margin-top:8px}
-</style>
-</head>
-<body>
-<header><h1>Tulan — Hourly Staffing</h1><div id="days" class="days"></div></header>
+header{background:#fff;padding:16px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+h1{font-size:23px;margin:0 0 10px}.views,.days,.actions{display:flex;gap:7px;overflow:auto;flex-wrap:wrap}
+button{font:inherit;min-height:42px}.pill,.btn{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 12px;font-weight:750}
+.pill.on,.primary{background:var(--p);color:#fff;border-color:var(--p)}main{max-width:850px;margin:auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0 6px}select,input{width:100%;font:inherit;font-size:16px;padding:11px;border:1px solid #d8d1df;border-radius:10px;background:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.big{font-size:31px;font-weight:850;color:var(--p)}
+.person{display:grid;grid-template-columns:1fr auto;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.person:last-child{border:0}.name{font-weight:800}.muted{font-size:13px;color:var(--muted)}
+.btn{border-radius:11px}.primary{border-radius:11px;padding:10px 13px;font-weight:800}.week{overflow:auto}.week table{border-collapse:collapse;min-width:720px;width:100%}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cell{border:1px solid var(--line);border-radius:9px;padding:7px;min-height:70px;background:#fff}.cell b{display:block}.badge{font-size:11px;color:var(--p);font-weight:800}
+.edit{border-top:1px solid var(--line);padding:12px 0}.edit:first-child{border-top:0}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.cal{gap:3px}.cell{padding:5px;min-height:58px;font-size:12px}}
+</style></head><body>
+<header><h1>Tulan — Hourly Staffing</h1><div class="views" id="views"></div></header>
 <main>
-<div class="card grid">
-<div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div>
-<div><label>VIEW</label><select id="view"><option value="hour">Selected hour</option><option value="all">All shifts</option></select></div>
+<div id="dayPanel">
+ <div class="card"><div class="days" id="days"></div></div>
+ <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div id="count" class="big">0</div></div></div>
+ <div class="card" id="staff"></div>
 </div>
-<div class="card"><label>EMPLOYEES WORKING</label><div id="count" class="big">0</div><div id="when" class="small"></div></div>
-<div id="staff" class="card"><span class="small">No employees added yet.</span></div>
+<div id="weekPanel" hidden><div class="card week" id="week"></div></div>
+<div id="monthPanel" hidden><div class="card"><div class="grid"><div><label>MONTH</label><input type="month" id="monthPick"></div><div><label>SELECTED DATE</label><div id="monthInfo" class="muted"></div></div></div></div><div class="card cal" id="calendar"></div></div>
 <div class="card">
-<div class="actions"><button class="primary" onclick="addEmployee()">+ Add employee</button><button class="secondary" onclick="copyAll()">Copy this day to all days</button></div>
-<div id="editor"></div>
+ <div class="actions"><button class="primary" id="add">+ Add employee</button><button class="btn" id="copy">Copy day to all days</button><button class="btn" id="importBtn">Import starter/backup</button><button class="btn" id="exportBtn">Export backup</button></div>
+ <input type="file" id="file" accept=".json,application/json" hidden>
+ <div id="editor"></div>
 </div>
-<p class="small">Employee names and schedules are stored in this browser on this device, not in the GitHub source code.</p>
+<p class="muted">Schedules are saved in this browser on this device. The public GitHub app contains no employee names.</p>
 </main>
 <script>
-const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], KEY="tulan_private_schedule_v1";
-let day="Mon", data=JSON.parse(localStorage.getItem(KEY)||"null")||Object.fromEntries(DAYS.map(d=>[d,[]]));
-const $=id=>document.getElementById(id);
-const fmt=t=>{let [h,m]=t.split(":").map(Number),a=h>=12?"PM":"AM";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+" "+a}
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+const D=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],KEY="tulan_schedule_v2";
+let state=JSON.parse(localStorage.getItem(KEY)||"null")||{version:2,employees:[],schedule:Object.fromEntries(D.map(d=>[d,[]]))};
+let day="Mon",viewMode="Day";
+const $=x=>document.getElementById(x), esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=t=>{let [h,m]=t.split(":").map(Number),a=h>=12?"PM":"AM";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+" "+a};
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function setView(v){viewMode=v;render()}
 function setDay(d){day=d;render()}
-function working(x,t){return t>=x.start&&t<x.end}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function render(){
- $("days").innerHTML=DAYS.map(d=>`<button class="day ${d==day?'on':''}" onclick="setDay('${d}')">${d}</button>`).join("");
- let t=$("time").value||"16:00", all=$("view").value==="all", rows=data[day].filter(x=>all||working(x,t));
- $("count").textContent=rows.length; $("when").textContent=all?day+" — all scheduled shifts":day+" at "+fmt(t);
- $("staff").innerHTML=rows.length?rows.map(x=>`<div class="person"><div><div class="name">${esc(x.name)}</div><div class="role">${esc(x.role||"Staff")}</div></div><div><b>${fmt(x.start)}–${fmt(x.end)}</b></div></div>`).join(""):'<span class="small">No employees scheduled at this time.</span>';
- $("editor").innerHTML=data[day].map((x,i)=>`<div class="edit"><b>${esc(x.name)}</b><div class="grid"><input id="s${i}" type="time" value="${x.start}"><input id="e${i}" type="time" value="${x.end}"></div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="updateShift(${i})">Save shift</button><button class="secondary" onclick="removeEmp(${i})">Remove</button></div></div>`).join("");
+ $("views").innerHTML=["Day","Week","Month"].map(v=>`<button class="pill ${v==viewMode?"on":""}" data-v="${v}">${v}</button>`).join("");
+ $("views").querySelectorAll("button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
+ $("dayPanel").hidden=viewMode!="Day";$("weekPanel").hidden=viewMode!="Week";$("monthPanel").hidden=viewMode!="Month";
+ $("days").innerHTML=D.map(d=>`<button class="pill ${d==day?"on":""}" data-d="${d}">${d}</button>`).join("");
+ $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
+ let t=$("time").value||"16:00", rows=(state.schedule[day]||[]).filter(x=>t>=x.start&&t<x.end);
+ $("count").textContent=rows.length;$("staff").innerHTML=rows.length?rows.map(x=>`<div class="person"><div><div class="name">${esc(x.name)}</div><div class="muted">${esc(x.role)}</div></div><b>${fmt(x.start)}–${fmt(x.end)}</b></div>`).join(""):'<span class="muted">No employees scheduled at this time.</span>';
+ $("week").innerHTML="<table><thead><tr><th>Employee</th>"+D.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody>"+state.employees.map(e=>`<tr><th>${esc(e.name)}<div class="muted">${esc(e.role)}</div></th>`+D.map(d=>{let s=(state.schedule[d]||[]).find(x=>x.name==e.name);return `<td>${s?fmt(s.start)+"–"+fmt(s.end):"—"}</td>`}).join("")+"</tr>").join("")+"</tbody></table>";
+ renderCalendar(); renderEditor();
 }
-function addEmployee(){let name=prompt("Employee name");if(!name)return;let role=prompt("Position / role","Staff")||"Staff";let start=prompt("Start time (24-hour format)","09:00")||"09:00";let end=prompt("End time (24-hour format)","17:00")||"17:00";data[day].push({name,role,start,end});save();render()}
-function updateShift(i){data[day][i].start=$("s"+i).value;data[day][i].end=$("e"+i).value;save();render()}
-function removeEmp(i){if(confirm("Remove "+data[day][i].name+" from "+day+"?")){data[day].splice(i,1);save();render()}}
-function copyAll(){if(confirm("Copy "+day+" schedule to every day?")){DAYS.forEach(d=>data[d]=JSON.parse(JSON.stringify(data[day])));save();render()}}
-for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h===16?"selected":""}>${fmt(v)}</option>`}
-$("time").onchange=render;$("view").onchange=render;render();
-</script>
-</body>
-</html>
+function renderEditor(){let rows=state.schedule[day]||[];$("editor").innerHTML=rows.map((x,i)=>`<div class="edit"><div class="grid"><div><label>NAME</label><input id="n${i}" value="${esc(x.name)}"></div><div><label>POSITION</label><input id="r${i}" value="${esc(x.role)}"></div><div><label>START</label><input id="s${i}" type="time" value="${x.start}"></div><div><label>END</label><input id="e${i}" type="time" value="${x.end}"></div></div><div class="actions" style="margin-top:8px"><button class="btn" data-save="${i}">Save employee</button><button class="btn" data-del="${i}">Remove</button></div></div>`).join("");
+ document.querySelectorAll("[data-save]").forEach(b=>b.onclick=()=>edit(+b.dataset.save));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>del(+b.dataset.del));
+}
+function edit(i){let old=state.schedule[day][i].name,n=$("n"+i).value.trim(),r=$("r"+i).value.trim();if(!n)return alert("Enter a name");state.schedule[day][i]={name:n,role:r,start:$("s"+i).value,end:$("e"+i).value};let e=state.employees.find(x=>x.name==old);if(e){e.name=n;e.role=r} D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));save();render()}
+function del(i){if(confirm("Remove this employee from "+day+"?")){state.schedule[day].splice(i,1);save();render()}}
+$("add").onclick=()=>{let n=prompt("Employee name");if(!n)return;let r=prompt("Position","Staff")||"Staff";if(!state.employees.some(x=>x.name==n))state.employees.push({name:n,role:r});state.schedule[day].push({name:n,role:r,start:"09:00",end:"17:00"});save();render()};
+$("copy").onclick=()=>{if(confirm("Copy "+day+" schedule to all days?")){D.forEach(d=>state.schedule[d]=JSON.parse(JSON.stringify(state.schedule[day])));save();render()}};
+$("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=JSON.parse(rd.result);if(!x.schedule||!x.employees)throw 0;state=x;save();render();alert("Imported successfully")}catch{alert("That backup file is not valid.")}};rd.readAsText(f)};
+$("exportBtn").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download="tulan-schedule-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+function renderCalendar(){let v=$("monthPick").value;if(!v)return;let [y,m]=v.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),offset=(first.getDay()+6)%7,html="";["M","T","W","T","F","S","S"].forEach(x=>html+=`<div class="muted" style="text-align:center"><b>${x}</b></div>`);for(let i=0;i<offset;i++)html+="<div></div>";for(let n=1;n<=last.getDate();n++){let dow=(new Date(y,m-1,n).getDay()+6)%7,d=D[dow],cnt=(state.schedule[d]||[]).length;html+=`<button class="cell" data-date="${n}" type="button"><b>${n}</b><span class="badge">${cnt} staff</span></button>`}$("calendar").innerHTML=html;$("calendar").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("monthInfo").textContent=v+"-"+String(b.dataset.date).padStart(2,"0")+" • "+D[(new Date(y,m-1,+b.dataset.date).getDay()+6)%7]})}
+let now=new Date();$("monthPick").value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");$("monthPick").onchange=renderCalendar;
+for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`}$("time").onchange=render;render();
+</script></body></html>
