@@ -16,7 +16,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cell{border:1px solid var(--line);border-radius:9px;padding:7px;min-height:70px;background:#fff}.cell b{display:block}.badge{font-size:11px;color:var(--p);font-weight:800}
 .edit{border-top:1px solid var(--line);padding:12px 0}.edit:first-child{border-top:0}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.cal{gap:3px}.cell{padding:5px;min-height:58px;font-size:12px}}
-</style></head><body>
+.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999}.modalBack[hidden]{display:none}.modalBox{background:#fff;border-radius:22px;width:min(560px,100%);max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modalBox h2{margin:0 0 14px}.modalBox textarea{width:100%;min-height:90px;box-sizing:border-box}.modalBox select,.modalBox input,.modalBox textarea{font-size:16px}</style></head><body>
 <header><h1>Tulan — Hourly Staffing</h1><div class="views" id="views"></div></header>
 <main>
 <div id="dayPanel">
@@ -35,7 +35,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
  </div>
 </div>
 <p class="muted">Schedules are saved in this browser on this device. The public GitHub app contains no employee names.</p>
-</main>
+<div id="employeeModal" class="modalBack" hidden><div class="modalBox"><h2>Edit Employee</h2><div class="grid"><div><label>NAME</label><input id="popName"></div><div><label>POSITION</label><input id="popRole"></div><div><label>DUTIES / DESCRIPTION</label><textarea id="popDuties" placeholder="Example: Prep vegetables, cook noodles, clean station"></textarea></div><div><label>PAY TYPE</label><select id="popPayType"><option value="hourly">Salary per hour</option><option value="monthly">Salary per month</option></select></div><div><label>PAY AMOUNT ($)</label><input id="popPay" type="number" min="0" step="0.01" placeholder="0.00"></div><div><label id="popStartLabel">START</label><input id="popStart" type="time"></div><div><label id="popEndLabel">END</label><input id="popEnd" type="time"></div></div><div class="actions" style="margin-top:14px"><button class="primary" id="popSave">Save changes</button><button class="btn" id="popRemove">Remove this day's shift</button><button class="btn" id="popCancel">Cancel</button></div></div></div></main>
 <script>
 const D=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],KEY="tulan_schedule_v2";
 let state=JSON.parse(localStorage.getItem(KEY)||"null")||{version:2,employees:[],schedule:Object.fromEntries(D.map(d=>[d,[]]))};
@@ -53,10 +53,11 @@ function render(){
  $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
  let t=$("time").value||"16:00", rows=(state.schedule[day]||[]).filter(x=>t>=x.start&&t<x.end);
  $("count").textContent=rows.length;$("staff").innerHTML=rows.length?rows.map(x=>`<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center"><div><div class="name">${esc(x.name)}</div><div class="muted">${esc(x.role)}</div></div><b>${fmt(x.start)}–${fmt(x.end)}</b></button>`).join(""):'<span class="muted">No employees scheduled at this time.</span>';
- $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>{window.editEmployeeName=b.dataset.person;$("managePanel").hidden=false;$("manageBtn").textContent="Hide employee editor";renderEditor();$("managePanel").scrollIntoView({behavior:"smooth",block:"start"})});
+ $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>openEmployeePopup(b.dataset.person));
  $("week").innerHTML="<table><thead><tr><th>Employee</th>"+D.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody>"+state.employees.map(e=>`<tr><th>${esc(e.name)}<div class="muted">${esc(e.role)}</div></th>`+D.map(d=>{let s=(state.schedule[d]||[]).find(x=>x.name==e.name);return `<td>${s?fmt(s.start)+"–"+fmt(s.end):"—"}</td>`}).join("")+"</tr>").join("")+"</tbody></table>";
  renderCalendar(); renderEditor();
 }
+function openEmployeePopup(name){let e=state.employees.find(x=>x.name==name);if(!e)return;let s=(state.schedule[day]||[]).find(x=>x.name==name);$("popName").value=e.name||"";$("popRole").value=e.role||"";$("popDuties").value=e.duties||"";$("popPayType").value=e.payType||"hourly";$("popPay").value=e.payAmount??"";$("popStart").value=s?s.start:"";$("popEnd").value=s?s.end:"";$("popStartLabel").textContent=day+" START";$("popEndLabel").textContent=day+" END";$("employeeModal").dataset.oldName=name;$("employeeModal").hidden=false}function closeEmployeePopup(){$("employeeModal").hidden=true}
 function renderEditor(){
  let rows=state.schedule[day]||[];
  let names=state.employees.map(e=>e.name);
@@ -87,6 +88,7 @@ function renderEditor(){
 }
 function edit(i){let old=state.schedule[day][i].name,n=$("n"+i).value.trim(),r=$("r"+i).value.trim();if(!n)return alert("Enter a name");state.schedule[day][i]={name:n,role:r,start:$("s"+i).value,end:$("e"+i).value};let e=state.employees.find(x=>x.name==old);if(e){e.name=n;e.role=r} D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));save();render()}
 function del(i){if(confirm("Remove this employee from "+day+"?")){state.schedule[day].splice(i,1);save();render()}}
+$("popCancel").onclick=closeEmployeePopup;$("employeeModal").onclick=e=>{if(e.target===$("employeeModal"))closeEmployeePopup()};$("popSave").onclick=()=>{let old=$("employeeModal").dataset.oldName,n=$("popName").value.trim(),r=$("popRole").value.trim();if(!n)return alert("Enter a name");let duties=$("popDuties").value.trim(),payType=$("popPayType").value,payAmount=$("popPay").value;let e=state.employees.find(x=>x.name==old);if(e){e.name=n;e.role=r;e.duties=duties;e.payType=payType;e.payAmount=payAmount}D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));let st=$("popStart").value,en=$("popEnd").value,idx=(state.schedule[day]||[]).findIndex(x=>x.name==n);if(st&&en){if(idx>=0){state.schedule[day][idx].start=st;state.schedule[day][idx].end=en;state.schedule[day][idx].role=r}else state.schedule[day].push({name:n,role:r,start:st,end:en})}save();closeEmployeePopup();render();alert("Employee updated")};$("popRemove").onclick=()=>{let old=$("employeeModal").dataset.oldName,idx=(state.schedule[day]||[]).findIndex(x=>x.name==old);if(idx<0)return alert("No shift scheduled for "+day);if(confirm("Remove "+old+"'s "+day+" shift?")){state.schedule[day].splice(idx,1);save();closeEmployeePopup();render()}};
 $("manageBtn").onclick=()=>{let p=$("managePanel");p.hidden=!p.hidden;$("manageBtn").textContent=p.hidden?"Modify employees":"Hide employee editor";if(!p.hidden)p.scrollIntoView({behavior:"smooth",block:"start"})};
 $("add").onclick=()=>{let n=prompt("Employee name");if(!n)return;let r=prompt("Position","Staff")||"Staff";if(!state.employees.some(x=>x.name==n))state.employees.push({name:n,role:r});state.schedule[day].push({name:n,role:r,start:"09:00",end:"17:00"});save();render()};
 $("copy").onclick=()=>{if(day=="Sat"||day=="Sun")return alert("Saturday and Sunday are closed.");if(confirm("Copy "+day+" schedule to Monday through Friday?")){["Mon","Tue","Wed","Thu","Fri"].forEach(d=>state.schedule[d]=JSON.parse(JSON.stringify(state.schedule[day])));state.schedule.Sat=[];state.schedule.Sun=[];save();render()}};
