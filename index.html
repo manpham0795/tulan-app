@@ -74,7 +74,15 @@ function renderEditor(){
  let s=rows.find(x=>x.name==selected);
  let form=e?`<div class="edit"><div class="grid"><div><label>NAME</label><input id="mn" value="${esc(e.name)}"></div><div><label>POSITION</label><input id="mr" value="${esc(e.role)}"></div><div><label>${day} START</label><input id="ms" type="time" value="${s?s.start:""}"></div><div><label>${day} END</label><input id="me" type="time" value="${s?s.end:""}"></div></div><div class="actions" style="margin-top:8px"><button class="primary" id="saveSelected">Save changes</button><button class="btn" id="removeShift">${s?"Remove "+day+" shift":"No "+day+" shift"}</button></div></div>`:'<div class="muted">Select an employee to modify.</div>';
  $("editor").innerHTML=selector+form;
- let sel=$("employeeSelect");if(sel)sel.onchange=()=>{window.editEmployeeName=sel.value;renderEditor()};
+ let sel=$("employeeSelect");if(sel)sel.onchange=()=>{
+
+window.editEmployeeName=sel.value;
+
+if(sel.value)openEmployeePopup(sel.value);
+
+renderEditor()
+
+};
  if(e){
    $("saveSelected").onclick=()=>{
      let old=e.name,n=$("mn").value.trim(),r=$("mr").value.trim(),st=$("ms").value,en=$("me").value;
