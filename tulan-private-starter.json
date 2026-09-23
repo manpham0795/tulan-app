@@ -1,0 +1,758 @@
+{
+  "version": 2,
+  "employees": [
+    {
+      "name": "Dao Nguyen",
+      "role": "Meat & Seafood Prep"
+    },
+    {
+      "name": "Fuye He",
+      "role": "Cleaning"
+    },
+    {
+      "name": "Ha Huynh",
+      "role": "Salad Bar"
+    },
+    {
+      "name": "Hai Ho",
+      "role": "Server"
+    },
+    {
+      "name": "Hai Le",
+      "role": "Cook"
+    },
+    {
+      "name": "Hanh Huynh",
+      "role": "Egg Roll"
+    },
+    {
+      "name": "Hen Truong",
+      "role": "Meat & Seafood Prep"
+    },
+    {
+      "name": "Huong Nguyen",
+      "role": "Server / Other"
+    },
+    {
+      "name": "Man Pham",
+      "role": "Owner / Staff"
+    },
+    {
+      "name": "Minh Phung",
+      "role": "Cook"
+    },
+    {
+      "name": "Ngoc Dang",
+      "role": "Salad Bar"
+    },
+    {
+      "name": "Quang Voong",
+      "role": "Dishwasher"
+    },
+    {
+      "name": "Shaoxia Lin",
+      "role": "Cleaning"
+    },
+    {
+      "name": "Tai La",
+      "role": "Meat & Seafood / Manager"
+    },
+    {
+      "name": "Tuyen Pham",
+      "role": "Misc"
+    },
+    {
+      "name": "Van Phung",
+      "role": "Staff"
+    }
+  ],
+  "schedule": {
+    "Mon": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ],
+    "Tue": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ],
+    "Wed": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ],
+    "Thu": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ],
+    "Fri": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ],
+    "Sat": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ],
+    "Sun": [
+      {
+        "name": "Dao Nguyen",
+        "role": "Meat & Seafood Prep",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Fuye He",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Ha Huynh",
+        "role": "Salad Bar",
+        "start": "09:00",
+        "end": "15:00"
+      },
+      {
+        "name": "Hai Ho",
+        "role": "Server",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hai Le",
+        "role": "Cook",
+        "start": "10:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Hanh Huynh",
+        "role": "Egg Roll",
+        "start": "09:00",
+        "end": "12:00"
+      },
+      {
+        "name": "Hen Truong",
+        "role": "Meat & Seafood Prep",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Huong Nguyen",
+        "role": "Server / Other",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Man Pham",
+        "role": "Owner / Staff",
+        "start": "09:00",
+        "end": "18:00"
+      },
+      {
+        "name": "Minh Phung",
+        "role": "Cook",
+        "start": "09:00",
+        "end": "17:00"
+      },
+      {
+        "name": "Ngoc Dang",
+        "role": "Salad Bar",
+        "start": "16:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Quang Voong",
+        "role": "Dishwasher",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Shaoxia Lin",
+        "role": "Cleaning",
+        "start": "20:00",
+        "end": "23:00"
+      },
+      {
+        "name": "Tai La",
+        "role": "Meat & Seafood / Manager",
+        "start": "11:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Tuyen Pham",
+        "role": "Misc",
+        "start": "09:00",
+        "end": "20:00"
+      },
+      {
+        "name": "Van Phung",
+        "role": "Staff",
+        "start": "11:00",
+        "end": "20:00"
+      }
+    ]
+  },
+  "notes": "Starter schedule based on prior Homebase screenshots. Review Man Pham and Van Phung details and any day-specific exceptions."
+}
