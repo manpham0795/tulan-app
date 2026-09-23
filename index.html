@@ -56,8 +56,33 @@ function render(){
  $("week").innerHTML="<table><thead><tr><th>Employee</th>"+D.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody>"+state.employees.map(e=>`<tr><th>${esc(e.name)}<div class="muted">${esc(e.role)}</div></th>`+D.map(d=>{let s=(state.schedule[d]||[]).find(x=>x.name==e.name);return `<td>${s?fmt(s.start)+"–"+fmt(s.end):"—"}</td>`}).join("")+"</tr>").join("")+"</tbody></table>";
  renderCalendar(); renderEditor();
 }
-function renderEditor(){let rows=state.schedule[day]||[];$("editor").innerHTML=rows.map((x,i)=>`<div class="edit"><div class="grid"><div><label>NAME</label><input id="n${i}" value="${esc(x.name)}"></div><div><label>POSITION</label><input id="r${i}" value="${esc(x.role)}"></div><div><label>START</label><input id="s${i}" type="time" value="${x.start}"></div><div><label>END</label><input id="e${i}" type="time" value="${x.end}"></div></div><div class="actions" style="margin-top:8px"><button class="btn" data-save="${i}">Save employee</button><button class="btn" data-del="${i}">Remove</button></div></div>`).join("");
- document.querySelectorAll("[data-save]").forEach(b=>b.onclick=()=>edit(+b.dataset.save));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>del(+b.dataset.del));
+function renderEditor(){
+ let rows=state.schedule[day]||[];
+ let names=state.employees.map(e=>e.name);
+ let selected=(window.editEmployeeName&&names.includes(window.editEmployeeName))?window.editEmployeeName:(names[0]||"");
+ window.editEmployeeName=selected;
+ let selector=`<div style="margin:12px 0"><label>SELECT EMPLOYEE</label><select id="employeeSelect"><option value="">Choose employee…</option>${state.employees.map(e=>`<option value="${esc(e.name)}" ${e.name==selected?"selected":""}>${esc(e.name)}</option>`).join("")}</select></div>`;
+ let e=state.employees.find(x=>x.name==selected);
+ let s=rows.find(x=>x.name==selected);
+ let form=e?`<div class="edit"><div class="grid"><div><label>NAME</label><input id="mn" value="${esc(e.name)}"></div><div><label>POSITION</label><input id="mr" value="${esc(e.role)}"></div><div><label>${day} START</label><input id="ms" type="time" value="${s?s.start:""}"></div><div><label>${day} END</label><input id="me" type="time" value="${s?s.end:""}"></div></div><div class="actions" style="margin-top:8px"><button class="primary" id="saveSelected">Save changes</button><button class="btn" id="removeShift">${s?"Remove "+day+" shift":"No "+day+" shift"}</button></div></div>`:'<div class="muted">Select an employee to modify.</div>';
+ $("editor").innerHTML=selector+form;
+ let sel=$("employeeSelect");if(sel)sel.onchange=()=>{window.editEmployeeName=sel.value;renderEditor()};
+ if(e){
+   $("saveSelected").onclick=()=>{
+     let old=e.name,n=$("mn").value.trim(),r=$("mr").value.trim(),st=$("ms").value,en=$("me").value;
+     if(!n)return alert("Enter a name");
+     state.employees.forEach(x=>{if(x.name==old){x.name=n;x.role=r}});
+     D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));
+     let idx=(state.schedule[day]||[]).findIndex(x=>x.name==n);
+     if(st&&en){if(idx>=0){state.schedule[day][idx].start=st;state.schedule[day][idx].end=en}else state.schedule[day].push({name:n,role:r,start:st,end:en})}
+     window.editEmployeeName=n;save();render();alert("Employee updated");
+   };
+   $("removeShift").onclick=()=>{
+     let idx=(state.schedule[day]||[]).findIndex(x=>x.name==e.name);
+     if(idx<0)return;
+     if(confirm("Remove "+e.name+"'s "+day+" shift?")){state.schedule[day].splice(idx,1);save();render()}
+   };
+ }
 }
 function edit(i){let old=state.schedule[day][i].name,n=$("n"+i).value.trim(),r=$("r"+i).value.trim();if(!n)return alert("Enter a name");state.schedule[day][i]={name:n,role:r,start:$("s"+i).value,end:$("e"+i).value};let e=state.employees.find(x=>x.name==old);if(e){e.name=n;e.role=r} D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));save();render()}
 function del(i){if(confirm("Remove this employee from "+day+"?")){state.schedule[day].splice(i,1);save();render()}}
