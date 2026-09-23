@@ -24,7 +24,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
  <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div id="count" class="big">0</div></div></div>
  <div class="card" id="staff"></div>
 </div>
-<div id="weekPanel" hidden><div class="card week" id="week"></div></div>
+<div id="weekPanel" hidden><div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="weekTime"></select></div></div><div class="card week" id="week"></div></div>
 <div id="monthPanel" hidden><div class="card"><div class="grid"><div><label>MONTH</label><input type="month" id="monthPick"></div><div><label>SELECTED DATE</label><div id="monthInfo" class="muted"></div></div></div></div><div class="card cal" id="calendar"></div></div>
 <div class="card">
  <div class="actions"><button class="primary" id="add">+ Add employee</button><button class="btn" id="manageBtn">Modify employees</button><button class="btn" id="copy">Copy day to weekdays</button><button class="btn" id="clearDay">Clear this day</button><button class="btn" id="clearAll">Clear all schedules</button><button class="btn" id="importBtn">Import starter/backup</button><button class="btn" id="exportBtn">Export backup</button></div>
@@ -35,23 +35,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
  </div>
 </div>
 <p class="muted">Schedules are saved in this browser on this device. The public GitHub app contains no employee names.</p>
-<div id="noteModal" class="modalBack" hidden><div class="modalBox"><h2>Staff Notes / Time Off</h2><div class="grid"><div><label>EMPLOYEE</label><select id="noteEmployee"></select></div><div><label>TYPE</label><select id="noteType"><option>Sick leave</option><option>Vacation</option><option>Requested off</option><option>Other</option></select></div><div><label>START DATE</label><input id="noteStartDate" type="date"></div><div><label>END DATE</label><input id="noteEndDate" type="date"></div><div><label>ALL DAY?</label><select id="noteAllDay"><option value="yes">Yes</option><option value="no">No — specific hours</option></select></div><div><label>START TIME</label><input id="noteStartTime" type="time"></div><div><label>END TIME</label><input id="noteEndTime" type="time"></div><div><label>NOTE</label><textarea id="noteText" placeholder="Example: Doctor appointment"></textarea></div></div><div class="actions" style="margin-top:14px"><button class="primary" id="noteSave">Save note</button><button class="btn" id="noteCancel">Cancel</button></div><div id="noteList" style="margin-top:16px"></div></div></div><div id="employeeModal" class="modalBack" hidden><div class="modalBox"><h2>Edit Employee</h2><div class="grid">
-<div><label>NAME</label><input id="popName"></div>
-<div><label>POSITION</label><input id="popRole"></div>
-<div><label>DUTIES / DESCRIPTION</label><textarea id="popDuties" placeholder="Example: Prep vegetables, cook noodles, clean station"></textarea></div>
-<div><label>PAY TYPE</label><select id="popPayType"><option value="hourly">Salary per hour</option><option value="biweekly">Salary per 2 weeks</option><option value="monthly">Salary per month</option></select></div>
-<div><label>PAY AMOUNT ($)</label><input id="popPay" type="number" min="0" step="0.01" placeholder="0.00"></div>
-</div>
-<div style="margin-top:16px"><b>WEEKLY SCHEDULE</b><div class="muted">Edit Monday–Friday. Leave both times blank to remove that day's shift.</div></div>
-<div class="grid" style="margin-top:10px">
-<div><label>MON START</label><input id="popMonStart" type="time"></div><div><label>MON END</label><input id="popMonEnd" type="time"></div>
-<div><label>TUE START</label><input id="popTueStart" type="time"></div><div><label>TUE END</label><input id="popTueEnd" type="time"></div>
-<div><label>WED START</label><input id="popWedStart" type="time"></div><div><label>WED END</label><input id="popWedEnd" type="time"></div>
-<div><label>THU START</label><input id="popThuStart" type="time"></div><div><label>THU END</label><input id="popThuEnd" type="time"></div>
-<div><label>FRI START</label><input id="popFriStart" type="time"></div><div><label>FRI END</label><input id="popFriEnd" type="time"></div>
-</div>
-<div class="actions" style="margin-top:14px"><button class="primary" id="popSave">Save all changes</button><button class="btn" id="popCancel">Cancel</button></div>
-</div></div></main>
+<div id="noteModal" class="modalBack" hidden><div class="modalBox"><h2>Staff Notes / Time Off</h2><div class="grid"><div><label>EMPLOYEE</label><select id="noteEmployee"></select></div><div><label>TYPE</label><select id="noteType"><option>Sick leave</option><option>Vacation</option><option>Requested off</option><option>Other</option></select></div><div><label>START DATE</label><input id="noteStartDate" type="date"></div><div><label>END DATE</label><input id="noteEndDate" type="date"></div><div><label>ALL DAY?</label><select id="noteAllDay"><option value="yes">Yes</option><option value="no">No — specific hours</option></select></div><div><label>START TIME</label><input id="noteStartTime" type="time"></div><div><label>END TIME</label><input id="noteEndTime" type="time"></div><div><label>NOTE</label><textarea id="noteText" placeholder="Example: Doctor appointment"></textarea></div></div><div class="actions" style="margin-top:14px"><button class="primary" id="noteSave">Save note</button><button class="btn" id="noteCancel">Cancel</button></div><div id="noteList" style="margin-top:16px"></div></div></div><div id="employeeModal" class="modalBack" hidden><div class="modalBox"><h2>Edit Employee</h2><div class="grid"><div><label>NAME</label><input id="popName"></div><div><label>POSITION</label><input id="popRole"></div><div><label>DUTIES / DESCRIPTION</label><textarea id="popDuties" placeholder="Example: Prep vegetables, cook noodles, clean station"></textarea></div><div><label>PAY TYPE</label><select id="popPayType"><option value="hourly">Salary per hour</option><option value="biweekly">Salary per 2 weeks</option><option value="monthly">Salary per month</option></select></div><div><label>PAY AMOUNT ($)</label><input id="popPay" type="number" min="0" step="0.01" placeholder="0.00"></div><div><label id="popStartLabel">START</label><input id="popStart" type="time"></div><div><label id="popEndLabel">END</label><input id="popEnd" type="time"></div></div><div class="actions" style="margin-top:14px"><button class="primary" id="popSave">Save changes</button><button class="btn" id="popRemove">Remove this day's shift</button><button class="btn" id="popCancel">Cancel</button></div></div></div></main>
 <script>
 const D=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],KEY="tulan_schedule_v2";
 let state=JSON.parse(localStorage.getItem(KEY)||"null")||{version:2,employees:[],schedule:Object.fromEntries(D.map(d=>[d,[]]))};
@@ -76,16 +60,10 @@ function render(){
  $("count").textContent=presentRows.length;
  $("absenceBanner").innerHTML=abs.length?`<div class="card" style="margin-bottom:12px"><b>Time off / absent for ${selectedDate}</b>${abs.map(n=>`<div class="muted">${esc(n.employee)} — ${esc(n.type)}${n.allDay=="yes"?" (all day)":" "+fmt(n.startTime)+"–"+fmt(n.endTime)}</div>`).join("")}</div>`:"";$("staff").innerHTML=(presentRows.length||rows.some(x=>absNames.has(x.name)))?rows.map(x=>{let a=abs.find(n=>n.employee==x.name);return `<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center;${a?"opacity:.55":""}"><div><div class="name">${esc(x.name)}${a?" — ABSENT":""}</div><div class="muted">${a?esc(a.type)+(a.note?" • "+esc(a.note):""):esc(x.role)}</div></div><b>${a?"OUT":fmt(x.start)+"–"+fmt(x.end)}</b></button>`}).join(""):'<span class="muted">No employees scheduled at this time.</span>';
  $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>openEmployeePopup(b.dataset.person));
- $("week").innerHTML="<table><thead><tr><th>Employee</th>"+D.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody>"+state.employees.map(e=>`<tr><th>${esc(e.name)}<div class="muted">${esc(e.role)}</div></th>`+D.map(d=>{let s=(state.schedule[d]||[]).find(x=>x.name==e.name);return `<td>${s?fmt(s.start)+"–"+fmt(s.end):"—"}</td>`}).join("")+"</tr>").join("")+"</tbody></table>";
+ let wt=$("weekTime").value||"14:00", weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>"+fmt(wt)+"</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Employees working</th>"+weekdays.map(d=>{let working=(state.schedule[d]||[]).filter(x=>wt>=x.start&&wt<x.end);let hourly=working.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};return sum+(e.payType=="hourly"?Number(e.payAmount||0):0)},0);return `<td>${working.length?working.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Total staff: ${working.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Hourly payroll: $${hourly.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
  renderCalendar(); renderEditor();
 }
-function openEmployeePopup(name){
- let e=state.employees.find(x=>x.name==name);if(!e)return;
- $("popName").value=e.name||"";$("popRole").value=e.role||"";$("popDuties").value=e.duties||"";$("popPayType").value=e.payType||"hourly";$("popPay").value=e.payAmount??"";
- ["Mon","Tue","Wed","Thu","Fri"].forEach(d=>{let s=(state.schedule[d]||[]).find(x=>x.name==name);$("pop"+d+"Start").value=s?s.start:"";$("pop"+d+"End").value=s?s.end:""});
- $("employeeModal").dataset.oldName=name;$("employeeModal").hidden=false
-}
-function closeEmployeePopup(){$("employeeModal").hidden=true}
+function openEmployeePopup(name){let e=state.employees.find(x=>x.name==name);if(!e)return;let s=(state.schedule[day]||[]).find(x=>x.name==name);$("popName").value=e.name||"";$("popRole").value=e.role||"";$("popDuties").value=e.duties||"";$("popPayType").value=e.payType||"hourly";$("popPay").value=e.payAmount??"";$("popStart").value=s?s.start:"";$("popEnd").value=s?s.end:"";$("popStartLabel").textContent=day+" START";$("popEndLabel").textContent=day+" END";$("employeeModal").dataset.oldName=name;$("employeeModal").hidden=false}function closeEmployeePopup(){$("employeeModal").hidden=true}
 function renderEditor(){
  let rows=state.schedule[day]||[];
  let names=state.employees.map(e=>e.name);
@@ -96,7 +74,7 @@ function renderEditor(){
  let s=rows.find(x=>x.name==selected);
  let form=e?`<div class="edit"><div class="grid"><div><label>NAME</label><input id="mn" value="${esc(e.name)}"></div><div><label>POSITION</label><input id="mr" value="${esc(e.role)}"></div><div><label>${day} START</label><input id="ms" type="time" value="${s?s.start:""}"></div><div><label>${day} END</label><input id="me" type="time" value="${s?s.end:""}"></div></div><div class="actions" style="margin-top:8px"><button class="primary" id="saveSelected">Save changes</button><button class="btn" id="removeShift">${s?"Remove "+day+" shift":"No "+day+" shift"}</button></div></div>`:'<div class="muted">Select an employee to modify.</div>';
  $("editor").innerHTML=selector+form;
- let sel=$("employeeSelect");if(sel)sel.onchange=()=>{window.editEmployeeName=sel.value;if(sel.value)openEmployeePopup(sel.value);renderEditor()};
+ let sel=$("employeeSelect");if(sel)sel.onchange=()=>{window.editEmployeeName=sel.value;renderEditor()};
  if(e){
    $("saveSelected").onclick=()=>{
      let old=e.name,n=$("mn").value.trim(),r=$("mr").value.trim(),st=$("ms").value,en=$("me").value;
@@ -121,28 +99,7 @@ $("notesBtn").onclick=()=>{$("noteEmployee").innerHTML=state.employees.map(e=>`<
 $("noteCancel").onclick=()=>{$("noteModal").hidden=true};
 $("noteModal").onclick=e=>{if(e.target===$("noteModal"))$("noteModal").hidden=true};
 $("noteSave").onclick=()=>{let n={employee:$("noteEmployee").value,type:$("noteType").value,startDate:$("noteStartDate").value,endDate:$("noteEndDate").value,allDay:$("noteAllDay").value,startTime:$("noteStartTime").value,endTime:$("noteEndTime").value,note:$("noteText").value.trim()};if(!n.employee||!n.startDate||!n.endDate)return alert("Choose employee and dates.");if(n.allDay=="no"&&(!n.startTime||!n.endTime))return alert("Enter start and end time.");state.notes.push(n);save();renderNotes();render();alert("Time-off note saved.")};
-$("popCancel").onclick=closeEmployeePopup;
-$("employeeModal").onclick=e=>{if(e.target===$("employeeModal"))closeEmployeePopup()};
-$("popSave").onclick=()=>{
- let old=$("employeeModal").dataset.oldName,n=$("popName").value.trim(),r=$("popRole").value.trim();
- if(!n)return alert("Enter a name");
- let duties=$("popDuties").value.trim(),payType=$("popPayType").value,payAmount=$("popPay").value;
- let e=state.employees.find(x=>x.name==old);
- if(e){e.name=n;e.role=r;e.duties=duties;e.payType=payType;e.payAmount=payAmount}
- D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));
- ["Mon","Tue","Wed","Thu","Fri"].forEach(d=>{
-   let st=$("pop"+d+"Start").value,en=$("pop"+d+"End").value,arr=state.schedule[d]||[],idx=arr.findIndex(x=>x.name==n);
-   if(st&&en){
-     if(idx>=0){arr[idx].start=st;arr[idx].end=en;arr[idx].role=r}
-     else arr.push({name:n,role:r,start:st,end:en})
-   }else if(!st&&!en&&idx>=0){
-     arr.splice(idx,1)
-   }
-   state.schedule[d]=arr
- });
- state.schedule.Sat=[];state.schedule.Sun=[];
- window.editEmployeeName=n;save();closeEmployeePopup();render();alert("Employee and weekly schedule updated")
-};
+$("popCancel").onclick=closeEmployeePopup;$("employeeModal").onclick=e=>{if(e.target===$("employeeModal"))closeEmployeePopup()};$("popSave").onclick=()=>{let old=$("employeeModal").dataset.oldName,n=$("popName").value.trim(),r=$("popRole").value.trim();if(!n)return alert("Enter a name");let duties=$("popDuties").value.trim(),payType=$("popPayType").value,payAmount=$("popPay").value;let e=state.employees.find(x=>x.name==old);if(e){e.name=n;e.role=r;e.duties=duties;e.payType=payType;e.payAmount=payAmount}D.forEach(d=>(state.schedule[d]||[]).forEach(x=>{if(x.name==old){x.name=n;x.role=r}}));let st=$("popStart").value,en=$("popEnd").value,idx=(state.schedule[day]||[]).findIndex(x=>x.name==n);if(st&&en){if(idx>=0){state.schedule[day][idx].start=st;state.schedule[day][idx].end=en;state.schedule[day][idx].role=r}else state.schedule[day].push({name:n,role:r,start:st,end:en})}save();closeEmployeePopup();render();alert("Employee updated")};$("popRemove").onclick=()=>{let old=$("employeeModal").dataset.oldName,idx=(state.schedule[day]||[]).findIndex(x=>x.name==old);if(idx<0)return alert("No shift scheduled for "+day);if(confirm("Remove "+old+"'s "+day+" shift?")){state.schedule[day].splice(idx,1);save();closeEmployeePopup();render()}};
 $("manageBtn").onclick=()=>{let p=$("managePanel");p.hidden=!p.hidden;$("manageBtn").textContent=p.hidden?"Modify employees":"Hide employee editor";if(!p.hidden)p.scrollIntoView({behavior:"smooth",block:"start"})};
 $("add").onclick=()=>{let n=prompt("Employee name");if(!n)return;let r=prompt("Position","Staff")||"Staff";if(!state.employees.some(x=>x.name==n))state.employees.push({name:n,role:r});state.schedule[day].push({name:n,role:r,start:"09:00",end:"17:00"});save();render()};
 $("copy").onclick=()=>{if(day=="Sat"||day=="Sun")return alert("Saturday and Sunday are closed.");if(confirm("Copy "+day+" schedule to Monday through Friday?")){["Mon","Tue","Wed","Thu","Fri"].forEach(d=>state.schedule[d]=JSON.parse(JSON.stringify(state.schedule[day])));state.schedule.Sat=[];state.schedule.Sun=[];save();render()}};
@@ -152,5 +109,5 @@ $("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.targ
 $("exportBtn").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download="tulan-schedule-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 function renderCalendar(){let v=$("monthPick").value;if(!v)return;let [y,m]=v.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),offset=(first.getDay()+6)%7,html="";["M","T","W","T","F","S","S"].forEach(x=>html+=`<div class="muted" style="text-align:center"><b>${x}</b></div>`);for(let i=0;i<offset;i++)html+="<div></div>";for(let n=1;n<=last.getDate();n++){let dow=(new Date(y,m-1,n).getDay()+6)%7,d=D[dow],cnt=(state.schedule[d]||[]).length;html+=`<button class="cell" data-date="${n}" type="button"><b>${n}</b><span class="badge">${cnt} staff</span></button>`}$("calendar").innerHTML=html;$("calendar").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("monthInfo").textContent=v+"-"+String(b.dataset.date).padStart(2,"0")+" • "+D[(new Date(y,m-1,+b.dataset.date).getDay()+6)%7]})}
 let now=new Date();$("monthPick").value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");$("monthPick").onchange=renderCalendar;
-for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`}$("time").onchange=render;render();
+for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`;$("weekTime").innerHTML+=`<option value="${v}" ${h==14?"selected":""}>${fmt(v)}</option>`}$("time").onchange=render;$("weekTime").onchange=render;render();
 </script></body></html>
