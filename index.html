@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Tulan Staffing</title>
+<style>
+:root{--p:#5b2490;--bg:#f6f4f8;--card:#fff;--line:#e3dfe8;--muted:#716a78}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#21172d}
+header{background:#fff;padding:18px 16px 12px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+h1{font-size:24px;margin:0 0 12px}.days{display:flex;gap:6px;overflow:auto}.day{padding:9px 12px;border:1px solid var(--line);border-radius:20px;background:white;font-weight:700}.day.on{background:var(--p);color:white}
+main{max-width:720px;margin:auto;padding:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0 6px}select,input{width:100%;font:inherit;padding:11px;border:1px solid #d8d1df;border-radius:10px;background:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.big{font-size:32px;font-weight:850;color:var(--p)}
+.person{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.person:last-child{border:0}.name{font-weight:800}.role,.small{font-size:13px;color:var(--muted)}
+button{font:inherit}.primary{border:0;border-radius:11px;background:var(--p);color:#fff;font-weight:800;padding:12px}.secondary{border:1px solid var(--p);border-radius:11px;background:#fff;color:var(--p);font-weight:800;padding:11px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.edit{padding:12px 0;border-bottom:1px solid var(--line)}.edit .grid{margin-top:8px}
+</style>
+</head>
+<body>
+<header><h1>Tulan — Hourly Staffing</h1><div id="days" class="days"></div></header>
+<main>
+<div class="card grid">
+<div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div>
+<div><label>VIEW</label><select id="view"><option value="hour">Selected hour</option><option value="all">All shifts</option></select></div>
+</div>
+<div class="card"><label>EMPLOYEES WORKING</label><div id="count" class="big">0</div><div id="when" class="small"></div></div>
+<div id="staff" class="card"><span class="small">No employees added yet.</span></div>
+<div class="card">
+<div class="actions"><button class="primary" onclick="addEmployee()">+ Add employee</button><button class="secondary" onclick="copyAll()">Copy this day to all days</button></div>
+<div id="editor"></div>
+</div>
+<p class="small">Employee names and schedules are stored in this browser on this device, not in the GitHub source code.</p>
+</main>
+<script>
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], KEY="tulan_private_schedule_v1";
+let day="Mon", data=JSON.parse(localStorage.getItem(KEY)||"null")||Object.fromEntries(DAYS.map(d=>[d,[]]));
+const $=id=>document.getElementById(id);
+const fmt=t=>{let [h,m]=t.split(":").map(Number),a=h>=12?"PM":"AM";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+" "+a}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function setDay(d){day=d;render()}
+function working(x,t){return t>=x.start&&t<x.end}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){
+ $("days").innerHTML=DAYS.map(d=>`<button class="day ${d==day?'on':''}" onclick="setDay('${d}')">${d}</button>`).join("");
+ let t=$("time").value||"16:00", all=$("view").value==="all", rows=data[day].filter(x=>all||working(x,t));
+ $("count").textContent=rows.length; $("when").textContent=all?day+" — all scheduled shifts":day+" at "+fmt(t);
+ $("staff").innerHTML=rows.length?rows.map(x=>`<div class="person"><div><div class="name">${esc(x.name)}</div><div class="role">${esc(x.role||"Staff")}</div></div><div><b>${fmt(x.start)}–${fmt(x.end)}</b></div></div>`).join(""):'<span class="small">No employees scheduled at this time.</span>';
+ $("editor").innerHTML=data[day].map((x,i)=>`<div class="edit"><b>${esc(x.name)}</b><div class="grid"><input id="s${i}" type="time" value="${x.start}"><input id="e${i}" type="time" value="${x.end}"></div><div class="actions" style="margin-top:8px"><button class="secondary" onclick="updateShift(${i})">Save shift</button><button class="secondary" onclick="removeEmp(${i})">Remove</button></div></div>`).join("");
+}
+function addEmployee(){let name=prompt("Employee name");if(!name)return;let role=prompt("Position / role","Staff")||"Staff";let start=prompt("Start time (24-hour format)","09:00")||"09:00";let end=prompt("End time (24-hour format)","17:00")||"17:00";data[day].push({name,role,start,end});save();render()}
+function updateShift(i){data[day][i].start=$("s"+i).value;data[day][i].end=$("e"+i).value;save();render()}
+function removeEmp(i){if(confirm("Remove "+data[day][i].name+" from "+day+"?")){data[day].splice(i,1);save();render()}}
+function copyAll(){if(confirm("Copy "+day+" schedule to every day?")){DAYS.forEach(d=>data[d]=JSON.parse(JSON.stringify(data[day])));save();render()}}
+for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h===16?"selected":""}>${fmt(v)}</option>`}
+$("time").onchange=render;$("view").onchange=render;render();
+</script>
+</body>
+</html>
