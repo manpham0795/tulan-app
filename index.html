@@ -21,7 +21,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
 <main>
 <div id="dayPanel">
  <div class="card"><div class="days" id="days"></div></div>
- <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div id="count" class="big">0</div><div id="dayLabor" style="margin-top:8px;font-weight:800;color:var(--p)">Labor cost: $0.00/hr</div></div></div>
+ <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div id="count" class="big">0</div></div></div>
  <div class="card" id="staff"></div>
 </div>
 <div id="weekPanel" hidden><div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="weekTime"></select></div></div><div class="card week" id="week"></div></div>
@@ -45,20 +45,6 @@ function activeNotesAt(date,time){return (state.notes||[]).filter(n=>date>=n.sta
 
 const $=x=>document.getElementById(x), esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=t=>{let [h,m]=t.split(":").map(Number),a=h>=12?"PM":"AM";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+" "+a};
-function hourlyRateForEmployee(e){
- let amount=Number(e&&e.payAmount||0);
- if(!amount)return 0;
- if((e.payType||"hourly")==="hourly")return amount;
- if(e.payType==="biweekly")return amount/80;
- if(e.payType==="monthly")return amount/173.33;
- return 0;
-}
-function laborForRows(rows){
- return rows.reduce((sum,x)=>{
-  let e=state.employees.find(y=>y.name==x.name);
-  return sum+hourlyRateForEmployee(e);
- },0);
-}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function setView(v){viewMode=v;render()}
 function setDay(d){day=d;render()}
@@ -71,10 +57,10 @@ function render(){
  let t=$("time").value||"16:00", rows=(state.schedule[day]||[]).filter(x=>t>=x.start&&t<x.end);
  let now=new Date(),target=D.indexOf(day),todayIdx=(now.getDay()+6)%7,delta=(target-todayIdx+7)%7,dd=new Date(now);dd.setDate(now.getDate()+delta);let selectedDate=dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0");
  let abs=activeNotesAt(selectedDate,t),absNames=new Set(abs.map(n=>n.employee)),presentRows=rows.filter(x=>!absNames.has(x.name));
- $("count").textContent=presentRows.length; $("dayLabor").textContent="Labor cost at "+fmt(t)+": $"+laborForRows(presentRows).toFixed(2)+"/hr";
+ $("count").textContent=presentRows.length;
  $("absenceBanner").innerHTML=abs.length?`<div class="card" style="margin-bottom:12px"><b>Time off / absent for ${selectedDate}</b>${abs.map(n=>`<div class="muted">${esc(n.employee)} — ${esc(n.type)}${n.allDay=="yes"?" (all day)":" "+fmt(n.startTime)+"–"+fmt(n.endTime)}</div>`).join("")}</div>`:"";$("staff").innerHTML=(presentRows.length||rows.some(x=>absNames.has(x.name)))?rows.map(x=>{let a=abs.find(n=>n.employee==x.name);return `<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center;${a?"opacity:.55":""}"><div><div class="name">${esc(x.name)}${a?" — ABSENT":""}</div><div class="muted">${a?esc(a.type)+(a.note?" • "+esc(a.note):""):esc(x.role)}</div></div><b>${a?"OUT":fmt(x.start)+"–"+fmt(x.end)}</b></button>`}).join(""):'<span class="muted">No employees scheduled at this time.</span>';
  $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>openEmployeePopup(b.dataset.person));
- let wt=$("weekTime").value||"14:00", weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>"+fmt(wt)+"</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Employees working</th>"+weekdays.map(d=>{let working=(state.schedule[d]||[]).filter(x=>wt>=x.start&&wt<x.end);let labor=laborForRows(working);return `<td>${working.length?working.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Total staff: ${working.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Labor cost at ${fmt(wt)}: $${labor.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
+ let wt=$("weekTime").value||"14:00", weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>"+fmt(wt)+"</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Employees working</th>"+weekdays.map(d=>{let working=(state.schedule[d]||[]).filter(x=>wt>=x.start&&wt<x.end);let dayShifts=(state.schedule[d]||[]);let labor=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number);let hours=((eh*60+em)-(sh*60+sm))/60;if(hours<0)hours+=24;return sum+hours*Number(e.payAmount||0)},0);let [wh,wm]=wt.split(":").map(Number),cutoff=wh*60+wm;let laborToHour=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number),start=sh*60+sm,end=eh*60+em;if(end<start)end+=1440;let c=cutoff;if(c<start&&end>1440)c+=1440;let mins=Math.max(0,Math.min(c,end)-start);return sum+(mins/60)*Number(e.payAmount||0)},0);return `<td>${working.length?working.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Staff working at ${fmt(wt)}: ${working.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Labor cost at ${fmt(wt)}: $${working.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};return e.payType==="hourly"?sum+Number(e.payAmount||0):sum},0).toFixed(2)}</div><div style=\"margin-top:6px;font-weight:800\">Total staff today: ${dayShifts.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Total labor cost for ${d}: $${labor.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
  renderCalendar(); renderEditor();
 }
 function openEmployeePopup(name){let e=state.employees.find(x=>x.name==name);if(!e)return;let s=(state.schedule[day]||[]).find(x=>x.name==name);$("popName").value=e.name||"";$("popRole").value=e.role||"";$("popDuties").value=e.duties||"";$("popPayType").value=e.payType||"hourly";$("popPay").value=e.payAmount??"";$("popStart").value=s?s.start:"";$("popEnd").value=s?s.end:"";$("popStartLabel").textContent=day+" START";$("popEndLabel").textContent=day+" END";$("employeeModal").dataset.oldName=name;$("employeeModal").hidden=false}function closeEmployeePopup(){$("employeeModal").hidden=true}
