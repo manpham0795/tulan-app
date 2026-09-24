@@ -15,6 +15,17 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
 .btn{border-radius:11px}.primary{border-radius:11px;padding:10px 13px;font-weight:800}.week{overflow:auto}.week table{border-collapse:collapse;min-width:720px;width:100%}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cell{border:1px solid var(--line);border-radius:9px;padding:7px;min-height:70px;background:#fff}.cell b{display:block}.badge{font-size:11px;color:var(--p);font-weight:800}
 .edit{border-top:1px solid var(--line);padding:12px 0}.edit:first-child{border-top:0}
+.hourlyScroll{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:10px;-webkit-overflow-scrolling:touch}
+.hourlyTable{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%}
+.hourlyTable th,.hourlyTable td{min-width:76px;text-align:center;padding:9px 6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+.hourlyTable thead th{background:#f4eef9;color:var(--p);font-weight:800}
+.hourlyTable .hourlyName{position:sticky;left:0;z-index:1;min-width:145px;max-width:145px;text-align:left;background:#fff;white-space:normal;box-shadow:2px 0 4px rgba(0,0,0,.07)}
+.hourlyTable thead .hourlyName{z-index:2;background:#f4eef9}
+.hourlyTable tfoot th,.hourlyTable tfoot td{background:#eee4f7;color:var(--p);font-weight:800;border-bottom:0}
+.hourlyTable tfoot .hourlyName{background:#eee4f7}
+.hourlyTable tr>:last-child{border-right:0}
+.hourlyWorking{background:#f4eef9;color:#482078;font-weight:800}
+.hourlyPartial{display:block;font-size:11px;font-weight:600}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.cal{gap:3px}.cell{padding:5px;min-height:58px;font-size:12px}}
 .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999}.modalBack[hidden]{display:none}.modalBox{background:#fff;border-radius:22px;width:min(560px,100%);max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modalBox h2{margin:0 0 14px}.modalBox textarea{width:100%;min-height:90px;box-sizing:border-box}.modalBox select,.modalBox input,.modalBox textarea{font-size:16px}
 #connectPanel,#migrationBox{max-width:850px;margin:14px auto;padding:0 14px}#migrationBox{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}#connectPanel textarea{width:100%;min-height:115px;font:14px monospace}#connectPanel input{margin-bottom:10px}#appMain[hidden]{display:none}#syncStatus{font-size:13px;font-weight:700;color:#5b2490}#syncStatus.error{color:#a62525}</style></head><body>
@@ -25,6 +36,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
  <div class="card"><div class="days" id="days"></div></div>
  <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px"><div id="count" class="big">0</div><div style="text-align:right"><div class="muted" id="dayLaborLabel">LABOR COST AT 2 PM</div><div id="dayLabor" class="big" style="font-size:24px">$0.00</div></div></div></div></div>
  <div class="card" id="staff"></div>
+ <div class="card"><h2 style="font-size:19px;margin:0 0 6px">Hourly staffing — <span id="hourlyDay">Monday</span></h2><p class="muted" style="margin:0 0 12px">Swipe the table sideways to see 6 AM–11 PM. Labor cost includes hourly pay for time worked in each hour.</p><div class="hourlyScroll" tabindex="0" aria-label="Hourly staffing table; scroll sideways"><table class="hourlyTable" id="hourlyTable"></table></div></div>
 </div>
 <div id="weekPanel" hidden><div class="card week" id="week"></div></div>
 <div id="monthPanel" hidden><div class="card"><div class="grid"><div><label>MONTH</label><input type="month" id="monthPick"></div><div><label>SELECTED DATE</label><div id="monthInfo" class="muted"></div></div></div></div><div class="card cal" id="calendar"></div></div>
@@ -47,6 +59,24 @@ function activeNotesAt(date,time){return (state.notes||[]).filter(n=>date>=n.sta
 
 const $=x=>document.getElementById(x), esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=t=>{let [h,m]=t.split(":").map(Number),a=h>=12?"PM":"AM";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+" "+a};
+const minutes=t=>{let [h,m]=String(t||"0:00").split(":").map(Number);return h*60+m};
+function workingMinutes(shift,hour,notes){
+ let start=minutes(shift.start),end=minutes(shift.end);if(end<=start)end+=1440;
+ let a=Math.max(start,hour*60),b=Math.min(end,(hour+1)*60);if(b<=a)return 0;
+ let absent=notes.filter(n=>n.employee===shift.name).map(n=>n.allDay==="yes"?[a,b]:[Math.max(a,minutes(n.startTime)),Math.min(b,minutes(n.endTime))]).filter(([x,y])=>y>x).sort((x,y)=>x[0]-y[0]);
+ let covered=0,last=a;for(let [x,y] of absent){covered+=Math.max(0,y-Math.max(last,x));last=Math.max(last,y)}
+ return Math.max(0,b-a-covered);
+}
+function renderHourlyTable(date){
+ const hours=Array.from({length:18},(_,i)=>i+6),shifts=state.schedule[day]||[];
+ const notes=(state.notes||[]).filter(n=>date>=n.startDate&&date<=n.endDate);
+ const cells=shifts.map(s=>hours.map(h=>workingMinutes(s,h,notes)));
+ const employee=x=>state.employees.find(e=>e.name===x.name)||{};
+ const totals=hours.map((_,i)=>shifts.reduce((sum,s,j)=>{let e=employee(s);return sum+(e.payType==="hourly"?Number(e.payAmount||0)*cells[j][i]/60:0)},0));
+ const labels=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+ $("hourlyDay").textContent=labels[D.indexOf(day)];
+ $("hourlyTable").innerHTML=`<thead><tr><th scope="col" class="hourlyName">Employee</th>${hours.map(h=>`<th scope="col">${fmt(String(h).padStart(2,"0")+":00")}</th>`).join("")}</tr></thead><tbody>${shifts.length?shifts.map((s,j)=>`<tr><th scope="row" class="hourlyName">${esc(s.name)}<div class="muted">${esc(s.role||employee(s).role||"")}</div></th>${hours.map((h,i)=>`<td class="${cells[j][i]?"hourlyWorking":""}" title="${esc(s.name)} ${fmt(String(h).padStart(2,"0")+":00")}">${cells[j][i]?`●${cells[j][i]<60?`<span class="hourlyPartial">${cells[j][i]} min</span>`:""}`:"—"}</td>`).join("")}</tr>`).join(""):`<tr><td class="hourlyName">No shifts</td><td colspan="18">No employees scheduled for this day.</td></tr>`}</tbody><tfoot><tr><th scope="row" class="hourlyName">Staff working</th>${hours.map((_,i)=>`<td>${cells.filter(row=>row[i]>0).length}</td>`).join("")}</tr><tr><th scope="row" class="hourlyName">Total labor</th>${totals.map(n=>`<td>$${n.toFixed(2)}</td>`).join("")}</tr></tfoot>`;
+}
 function save(){window.tulanCloud?.commit(JSON.parse(JSON.stringify(state)))}
 function setView(v){viewMode=v;render()}
 function setDay(d){day=d;render()}
@@ -65,6 +95,7 @@ function render(){
  $("dayLabor").textContent="$"+hourLabor.toFixed(2);
  $("absenceBanner").innerHTML=abs.length?`<div class="card" style="margin-bottom:12px"><b>Time off / absent for ${selectedDate}</b>${abs.map(n=>`<div class="muted">${esc(n.employee)} — ${esc(n.type)}${n.allDay=="yes"?" (all day)":" "+fmt(n.startTime)+"–"+fmt(n.endTime)}</div>`).join("")}</div>`:"";$("staff").innerHTML=(presentRows.length||rows.some(x=>absNames.has(x.name)))?rows.map(x=>{let a=abs.find(n=>n.employee==x.name);return `<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center;${a?"opacity:.55":""}"><div><div class="name">${esc(x.name)}${a?" — ABSENT":""}</div><div class="muted">${a?esc(a.type)+(a.note?" • "+esc(a.note):""):esc(x.role)}</div></div><b>${a?"OUT":fmt(x.start)+"–"+fmt(x.end)}</b></button>`}).join(""):'<span class="muted">No employees scheduled at this time.</span>';
  $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>openEmployeePopup(b.dataset.person));
+ renderHourlyTable(selectedDate);
  let weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>Week</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Scheduled employees</th>"+weekdays.map(d=>{let dayShifts=(state.schedule[d]||[]);let labor=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number);let hours=((eh*60+em)-(sh*60+sm))/60;if(hours<0)hours+=24;return sum+hours*Number(e.payAmount||0)},0);return `<td>${dayShifts.length?dayShifts.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)} • ${fmt(x.start)}–${fmt(x.end)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Total staff today: ${dayShifts.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Total labor cost for ${d}: $${labor.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
  renderCalendar(); renderEditor();
 }
@@ -122,6 +153,15 @@ import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "htt
 import {getFirestore,doc,onSnapshot,runTransaction,getDocFromServer,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const CONFIG_KEY="tulan_firebase_config_v1", DRAFT_KEY="tulan_unsaved_draft_v1";
+const DEFAULT_CONFIG={
+  apiKey:"AIzaSyB5-uagB0Yd3udi4w-XPOAT5yluFwXMVQ4",
+  authDomain:"tulan-emp-schedule.firebaseapp.com",
+  projectId:"tulan-emp-schedule",
+  storageBucket:"tulan-emp-schedule.firebasestorage.app",
+  messagingSenderId:"512737177764",
+  appId:"1:512737177764:web:b4733ed5c52b8e53863631",
+  measurementId:"G-JGPWM9M8PW"
+};
 const empty=()=>({version:2,employees:[],schedule:Object.fromEntries(D.map(d=>[d,[]])),notes:[]});
 const clone=x=>JSON.parse(JSON.stringify(x));
 const valid=x=>x&&Array.isArray(x.employees)&&x.schedule&&typeof x.schedule==="object"&&D.every(d=>Array.isArray(x.schedule[d]||[]));
@@ -232,8 +272,9 @@ $("downloadDraftBtn").onclick=()=>{
 };
 gate(false);
 try{
-  const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");
-  if(saved){$("firebaseConfig").value=JSON.stringify(saved,null,2);await connect(saved)}
-  else status("Set up the private shared connection to begin.");
+  const saved=DEFAULT_CONFIG;
+  $("changeConfigBtn").hidden=true;
+  $("firebaseConfig").value=JSON.stringify(saved,null,2);
+  await connect(saved);
 }catch(e){status("Connection setup: "+e.message,true);$("setupBox").hidden=false}
 </script></body></html>
