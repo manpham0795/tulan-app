@@ -16,15 +16,17 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cell{border:1px solid var(--line);border-radius:9px;padding:7px;min-height:70px;background:#fff}.cell b{display:block}.badge{font-size:11px;color:var(--p);font-weight:800}
 .edit{border-top:1px solid var(--line);padding:12px 0}.edit:first-child{border-top:0}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.cal{gap:3px}.cell{padding:5px;min-height:58px;font-size:12px}}
-.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999}.modalBack[hidden]{display:none}.modalBox{background:#fff;border-radius:22px;width:min(560px,100%);max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modalBox h2{margin:0 0 14px}.modalBox textarea{width:100%;min-height:90px;box-sizing:border-box}.modalBox select,.modalBox input,.modalBox textarea{font-size:16px}</style></head><body>
-<header><h1>Tulan — Hourly Staffing</h1><div class="actions" style="margin-bottom:12px"><button class="primary" id="notesBtn">Staff Notes / Time Off</button></div><div id="absenceBanner"></div><div class="views" id="views"></div></header>
-<main>
+.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999}.modalBack[hidden]{display:none}.modalBox{background:#fff;border-radius:22px;width:min(560px,100%);max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modalBox h2{margin:0 0 14px}.modalBox textarea{width:100%;min-height:90px;box-sizing:border-box}.modalBox select,.modalBox input,.modalBox textarea{font-size:16px}
+#connectPanel,#migrationBox{max-width:850px;margin:14px auto;padding:0 14px}#migrationBox{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}#connectPanel textarea{width:100%;min-height:115px;font:14px monospace}#connectPanel input{margin-bottom:10px}#appMain[hidden]{display:none}#syncStatus{font-size:13px;font-weight:700;color:#5b2490}#syncStatus.error{color:#a62525}</style></head><body>
+<header><h1>Tulan — Hourly Staffing</h1><div id="syncStatus" role="status" aria-live="polite">Loading shared app…</div><div class="actions" style="margin:10px 0"><button class="primary" id="notesBtn" disabled>Staff Notes / Time Off</button><button class="btn" id="signOutBtn" hidden>Sign out</button></div><div id="absenceBanner"></div><div class="views" id="views"></div></header>
+<section id="connectPanel"><div class="card"><h2>Connect shared staffing</h2><p class="muted">Owner and manager sign in with separate accounts. The schedule is stored in your private Firebase project, not in GitHub.</p><div id="setupBox"><label>FIREBASE WEB APP CONFIGURATION (JSON)</label><textarea id="firebaseConfig" autocapitalize="off" spellcheck="false" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea><div class="actions"><button class="primary" id="connectBtn">Save connection</button></div></div><div id="loginBox" hidden><label>EMAIL</label><input id="loginEmail" type="email" autocomplete="username"><label>PASSWORD</label><input id="loginPassword" type="password" autocomplete="current-password"><div class="actions"><button class="primary" id="loginBtn">Sign in</button><button class="btn" id="changeConfigBtn">Change connection</button></div></div><div id="migrationBox" hidden><p id="migrationInfo" class="muted"></p><div class="actions"><button class="primary" id="uploadLocalBtn">Upload this phone's saved schedule</button><button class="btn" id="downloadDraftBtn" hidden>Download unsaved edit</button></div></div></div></section>
+<main id="appMain" hidden>
 <div id="dayPanel">
  <div class="card"><div class="days" id="days"></div></div>
  <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px"><div id="count" class="big">0</div><div style="text-align:right"><div class="muted" id="dayLaborLabel">LABOR COST AT 2 PM</div><div id="dayLabor" class="big" style="font-size:24px">$0.00</div></div></div></div></div>
  <div class="card" id="staff"></div>
 </div>
-<div id="weekPanel" hidden><div class="card week" id="week"></div><div class="card grid"><div><label>CHANGE HOUR</label><select id="weekTime"></select></div></div></div>
+<div id="weekPanel" hidden><div class="card week" id="week"></div></div>
 <div id="monthPanel" hidden><div class="card"><div class="grid"><div><label>MONTH</label><input type="month" id="monthPick"></div><div><label>SELECTED DATE</label><div id="monthInfo" class="muted"></div></div></div></div><div class="card cal" id="calendar"></div></div>
 <div class="card">
  <div class="actions"><button class="primary" id="add">+ Add employee</button><button class="btn" id="manageBtn">Modify employees</button><button class="btn" id="copy">Copy day to weekdays</button><button class="btn" id="clearDay">Clear this day</button><button class="btn" id="clearAll">Clear all schedules</button><button class="btn" id="importBtn">Import starter/backup</button><button class="btn" id="exportBtn">Export backup</button></div>
@@ -34,7 +36,7 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
    <div id="editor"></div>
  </div>
 </div>
-<p class="muted">Schedules are saved in this browser on this device. The public GitHub app contains no employee names.</p>
+<p class="muted">Changes sync to the private shared database. Export a backup regularly. The public GitHub file contains no employee names or passwords.</p>
 <div id="noteModal" class="modalBack" hidden><div class="modalBox"><h2>Staff Notes / Time Off</h2><div class="grid"><div><label>EMPLOYEE</label><select id="noteEmployee"></select></div><div><label>TYPE</label><select id="noteType"><option>Sick leave</option><option>Vacation</option><option>Requested off</option><option>Other</option></select></div><div><label>START DATE</label><input id="noteStartDate" type="date"></div><div><label>END DATE</label><input id="noteEndDate" type="date"></div><div><label>ALL DAY?</label><select id="noteAllDay"><option value="yes">Yes</option><option value="no">No — specific hours</option></select></div><div><label>START TIME</label><input id="noteStartTime" type="time"></div><div><label>END TIME</label><input id="noteEndTime" type="time"></div><div><label>NOTE</label><textarea id="noteText" placeholder="Example: Doctor appointment"></textarea></div></div><div class="actions" style="margin-top:14px"><button class="primary" id="noteSave">Save note</button><button class="btn" id="noteCancel">Cancel</button></div><div id="noteList" style="margin-top:16px"></div></div></div><div id="employeeModal" class="modalBack" hidden><div class="modalBox"><h2>Edit Employee</h2><div class="grid"><div><label>NAME</label><input id="popName"></div><div><label>POSITION</label><input id="popRole"></div><div><label>DUTIES / DESCRIPTION</label><textarea id="popDuties" placeholder="Example: Prep vegetables, cook noodles, clean station"></textarea></div><div><label>PAY TYPE</label><select id="popPayType"><option value="hourly">Salary per hour</option><option value="biweekly">Salary per 2 weeks</option><option value="monthly">Salary per month</option></select></div><div><label>PAY AMOUNT ($)</label><input id="popPay" type="number" min="0" step="0.01" placeholder="0.00"></div><div><label id="popStartLabel">START</label><input id="popStart" type="time"></div><div><label id="popEndLabel">END</label><input id="popEnd" type="time"></div></div><div class="actions" style="margin-top:14px"><button class="primary" id="popSave">Save changes</button><button class="btn" id="popRemove">Remove this day's shift</button><button class="btn" id="popCancel">Cancel</button></div></div></div></main>
 <script>
 const D=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],KEY="tulan_schedule_v2";
@@ -45,7 +47,7 @@ function activeNotesAt(date,time){return (state.notes||[]).filter(n=>date>=n.sta
 
 const $=x=>document.getElementById(x), esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=t=>{let [h,m]=t.split(":").map(Number),a=h>=12?"PM":"AM";h=h%12||12;return h+(m?":"+String(m).padStart(2,"0"):"")+" "+a};
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){window.tulanCloud?.commit(JSON.parse(JSON.stringify(state)))}
 function setView(v){viewMode=v;render()}
 function setDay(d){day=d;render()}
 function render(){
@@ -63,7 +65,7 @@ function render(){
  $("dayLabor").textContent="$"+hourLabor.toFixed(2);
  $("absenceBanner").innerHTML=abs.length?`<div class="card" style="margin-bottom:12px"><b>Time off / absent for ${selectedDate}</b>${abs.map(n=>`<div class="muted">${esc(n.employee)} — ${esc(n.type)}${n.allDay=="yes"?" (all day)":" "+fmt(n.startTime)+"–"+fmt(n.endTime)}</div>`).join("")}</div>`:"";$("staff").innerHTML=(presentRows.length||rows.some(x=>absNames.has(x.name)))?rows.map(x=>{let a=abs.find(n=>n.employee==x.name);return `<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center;${a?"opacity:.55":""}"><div><div class="name">${esc(x.name)}${a?" — ABSENT":""}</div><div class="muted">${a?esc(a.type)+(a.note?" • "+esc(a.note):""):esc(x.role)}</div></div><b>${a?"OUT":fmt(x.start)+"–"+fmt(x.end)}</b></button>`}).join(""):'<span class="muted">No employees scheduled at this time.</span>';
  $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>openEmployeePopup(b.dataset.person));
- let wt=$("weekTime").value||"14:00", weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>"+fmt(wt)+"</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Employees working</th>"+weekdays.map(d=>{let working=(state.schedule[d]||[]).filter(x=>wt>=x.start&&wt<x.end);let dayShifts=(state.schedule[d]||[]);let labor=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number);let hours=((eh*60+em)-(sh*60+sm))/60;if(hours<0)hours+=24;return sum+hours*Number(e.payAmount||0)},0);let [wh,wm]=wt.split(":").map(Number),cutoff=wh*60+wm;let laborToHour=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number),start=sh*60+sm,end=eh*60+em;if(end<start)end+=1440;let c=cutoff;if(c<start&&end>1440)c+=1440;let mins=Math.max(0,Math.min(c,end)-start);return sum+(mins/60)*Number(e.payAmount||0)},0);return `<td>${working.length?working.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Staff working at ${fmt(wt)}: ${working.length}</div><div style=\"margin-top:6px;font-weight:800\">Total staff today: ${dayShifts.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Total labor cost for ${d}: $${labor.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
+ let weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>Week</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Scheduled employees</th>"+weekdays.map(d=>{let dayShifts=(state.schedule[d]||[]);let labor=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number);let hours=((eh*60+em)-(sh*60+sm))/60;if(hours<0)hours+=24;return sum+hours*Number(e.payAmount||0)},0);return `<td>${dayShifts.length?dayShifts.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)} • ${fmt(x.start)}–${fmt(x.end)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Total staff today: ${dayShifts.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Total labor cost for ${d}: $${labor.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
  renderCalendar(); renderEditor();
 }
 function openEmployeePopup(name){let e=state.employees.find(x=>x.name==name);if(!e)return;let s=(state.schedule[day]||[]).find(x=>x.name==name);$("popName").value=e.name||"";$("popRole").value=e.role||"";$("popDuties").value=e.duties||"";$("popPayType").value=e.payType||"hourly";$("popPay").value=e.payAmount??"";$("popStart").value=s?s.start:"";$("popEnd").value=s?s.end:"";$("popStartLabel").textContent=day+" START";$("popEndLabel").textContent=day+" END";$("employeeModal").dataset.oldName=name;$("employeeModal").hidden=false}function closeEmployeePopup(){$("employeeModal").hidden=true}
@@ -108,9 +110,130 @@ $("add").onclick=()=>{let n=prompt("Employee name");if(!n)return;let r=prompt("P
 $("copy").onclick=()=>{if(day=="Sat"||day=="Sun")return alert("Saturday and Sunday are closed.");if(confirm("Copy "+day+" schedule to Monday through Friday?")){["Mon","Tue","Wed","Thu","Fri"].forEach(d=>state.schedule[d]=JSON.parse(JSON.stringify(state.schedule[day])));state.schedule.Sat=[];state.schedule.Sun=[];save();render()}};
 $("clearDay").onclick=()=>{if(confirm("Remove every shift from "+day+"? Employee names will be kept.")){state.schedule[day]=[];save();render()}};
 $("clearAll").onclick=()=>{if(confirm("Clear ALL schedules Monday through Sunday? Employee names will be kept.")){D.forEach(d=>state.schedule[d]=[]);save();render();alert("All schedules cleared. Employee names were kept.")}};
-$("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=JSON.parse(rd.result);if(!x.schedule||!x.employees)throw 0;state=x;state.notes=Array.isArray(state.notes)?state.notes:[];state.schedule.Sat=[];state.schedule.Sun=[];save();render();alert("Imported successfully. Saturday and Sunday are closed.")}catch{alert("That backup file is not valid.")}};rd.readAsText(f)};
+$("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=JSON.parse(rd.result);if(!x.schedule||!Array.isArray(x.employees))throw 0;if(!confirm("Replace the shared schedule with this backup?"))return;state=x;state.notes=Array.isArray(state.notes)?state.notes:[];state.schedule.Sat=[];state.schedule.Sun=[];save();render()}catch{alert("That backup file is not valid.")}};rd.readAsText(f);e.target.value=""};
 $("exportBtn").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download="tulan-schedule-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 function renderCalendar(){let v=$("monthPick").value;if(!v)return;let [y,m]=v.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),offset=(first.getDay()+6)%7,html="";["M","T","W","T","F","S","S"].forEach(x=>html+=`<div class="muted" style="text-align:center"><b>${x}</b></div>`);for(let i=0;i<offset;i++)html+="<div></div>";for(let n=1;n<=last.getDate();n++){let dow=(new Date(y,m-1,n).getDay()+6)%7,d=D[dow],cnt=(state.schedule[d]||[]).length;html+=`<button class="cell" data-date="${n}" type="button"><b>${n}</b><span class="badge">${cnt} staff</span></button>`}$("calendar").innerHTML=html;$("calendar").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("monthInfo").textContent=v+"-"+String(b.dataset.date).padStart(2,"0")+" • "+D[(new Date(y,m-1,+b.dataset.date).getDay()+6)%7]})}
 let now=new Date();$("monthPick").value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");$("monthPick").onchange=renderCalendar;
-for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`;$("weekTime").innerHTML+=`<option value="${v}" ${h==14?"selected":""}>${fmt(v)}</option>`}$("time").onchange=render;$("weekTime").onchange=render;render();
+for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`}$("time").onchange=render;render();
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {getFirestore,doc,onSnapshot,runTransaction,getDocFromServer,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const CONFIG_KEY="tulan_firebase_config_v1", DRAFT_KEY="tulan_unsaved_draft_v1";
+const empty=()=>({version:2,employees:[],schedule:Object.fromEntries(D.map(d=>[d,[]])),notes:[]});
+const clone=x=>JSON.parse(JSON.stringify(x));
+const valid=x=>x&&Array.isArray(x.employees)&&x.schedule&&typeof x.schedule==="object"&&D.every(d=>Array.isArray(x.schedule[d]||[]));
+const status=(message,error=false)=>{const el=$("syncStatus");el.textContent=message;el.classList.toggle("error",error)};
+let auth,db,ref,unsub,confirmed=empty(),revision=0,ready=false,busy=false;
+const localCopy=(()=>{try{let x=JSON.parse(localStorage.getItem(KEY)||"null");return valid(x)?x:null}catch{return null}})();
+function gate(open){$("appMain").hidden=!open;$("appMain").inert=!open;$("notesBtn").disabled=!open;$("views").hidden=!open;$("absenceBanner").hidden=!open}
+function showDraft(){ $("downloadDraftBtn").hidden=!localStorage.getItem(DRAFT_KEY) }
+function showMigration(){
+  $("migrationBox").hidden=!ready;
+  $("uploadLocalBtn").hidden=!localCopy;
+  $("migrationInfo").textContent=localCopy
+    ?"This phone has an older local schedule. Upload it only if it is the correct current schedule. Uploading replaces the shared schedule."
+    :"No older local schedule was found on this device. Import a JSON backup from the app if needed.";
+  showDraft();
+}
+function applyRemote(data,rev){
+  confirmed=clone(data);revision=rev;state=clone(data);state.notes=Array.isArray(state.notes)?state.notes:[];
+  render();ready=true;gate(true);showMigration();
+  status("Live • shared changes saved");
+}
+async function commit(next){
+  if(!ready||busy){status("Wait for the current save to finish.",true);return}
+  if(!valid(next)){status("Invalid schedule. Nothing was saved.",true);state=clone(confirmed);render();return}
+  busy=true;gate(false);status("Saving shared change…");
+  localStorage.setItem(DRAFT_KEY,JSON.stringify(next));showDraft();
+  const expected=revision;
+  try{
+    const newRev=await runTransaction(db,async tx=>{
+      const snap=await tx.get(ref);
+      const actual=snap.exists()?Number(snap.data().revision||0):0;
+      if(actual!==expected)throw new Error("STALE_VERSION");
+      tx.set(ref,{revision:actual+1,state:next,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid});
+      return actual+1;
+    });
+    localStorage.removeItem(DRAFT_KEY);
+    confirmed=clone(next);revision=newRev;state=clone(next);
+    render();status("Live • change saved");
+  }catch(e){
+    try{
+      const latest=await getDocFromServer(ref);
+      const data=latest.exists()?latest.data():null;
+      if(data&&valid(data.state)){confirmed=clone(data.state);revision=Number(data.revision||0)}
+      else if(!latest.exists()){confirmed=empty();revision=0}
+    }catch{}
+    state=clone(confirmed);render();
+    status(e.message==="STALE_VERSION"
+      ?"Someone changed the schedule first. Latest version loaded. Download your unsaved edit before trying again."
+      :"Save failed: "+(e.code||e.message)+". Your unsaved edit can be downloaded.",true);
+  }finally{busy=false;gate(ready);showMigration()}
+}
+window.tulanCloud={commit};
+document.body.insertBefore($("migrationBox"),$("appMain"));
+function startListening(){
+  if(unsub)unsub();
+  ready=false;gate(false);status("Connecting to shared schedule…");
+  ref=doc(db,"staffing","tulan");
+  unsub=onSnapshot(ref,{includeMetadataChanges:true},snap=>{
+    if(snap.metadata.fromCache){if(!ready)status("Waiting for server connection…");return}
+    if(snap.metadata.hasPendingWrites||busy)return;
+    const data=snap.exists()?snap.data():null;
+    if(data&&!valid(data.state)){status("Shared data format is invalid. Contact the owner.",true);gate(false);return}
+    if(ready&&data&&Number(data.revision||0)<revision)return;
+    applyRemote(data?data.state:empty(),data?Number(data.revision||0):0);
+  },e=>{ready=false;gate(false);status("Shared access failed: "+(e.code||e.message)+". Check your account and database rules.",true)});
+}
+async function connect(config){
+  if(!config||!config.apiKey||!config.authDomain||!config.projectId||!config.appId)throw Error("Paste the full Firebase web configuration.");
+  const app=initializeApp(config);
+  auth=getAuth(app);db=getFirestore(app);
+  localStorage.setItem(CONFIG_KEY,JSON.stringify(config));
+  $("setupBox").hidden=true;$("loginBox").hidden=false;
+  onAuthStateChanged(auth,user=>{
+    if(user){
+      $("connectPanel").hidden=true;$("signOutBtn").hidden=false;
+      startListening();
+    }else{
+      if(unsub){unsub();unsub=null}
+      ready=false;gate(false);$("connectPanel").hidden=false;$("signOutBtn").hidden=true;
+      $("loginBox").hidden=false;$("migrationBox").hidden=true;
+      status("Sign in to see the shared schedule.");
+    }
+  });
+}
+$("connectBtn").onclick=async()=>{
+  try{const config=JSON.parse($("firebaseConfig").value);await connect(config)}
+  catch(e){status("Connection setup: "+e.message,true)}
+};
+$("loginBtn").onclick=async()=>{
+  try{status("Signing in…");await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value);$("loginPassword").value=""}
+  catch(e){status("Sign-in failed: "+(e.code||e.message),true)}
+};
+$("signOutBtn").onclick=()=>signOut(auth);
+$("changeConfigBtn").onclick=()=>{
+  localStorage.removeItem(CONFIG_KEY);
+  location.reload();
+};
+$("uploadLocalBtn").onclick=()=>{
+  if(!localCopy||!ready)return;
+  if(!confirm("Replace the shared schedule with this phone's older local schedule? Export a backup first if the shared schedule has edits."))return;
+  state=clone(localCopy);state.notes=Array.isArray(state.notes)?state.notes:[];
+  save();render();
+};
+$("downloadDraftBtn").onclick=()=>{
+  const data=localStorage.getItem(DRAFT_KEY);if(!data)return;
+  const a=document.createElement("a"),url=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+  a.href=url;a.download="tulan-unsaved-edit.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+gate(false);
+try{
+  const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");
+  if(saved){$("firebaseConfig").value=JSON.stringify(saved,null,2);await connect(saved)}
+  else status("Set up the private shared connection to begin.");
+}catch(e){status("Connection setup: "+e.message,true);$("setupBox").hidden=false}
 </script></body></html>
