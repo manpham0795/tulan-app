@@ -34,7 +34,8 @@ label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:0 0
 <main id="appMain" hidden>
 <div id="dayPanel">
  <div class="card"><div class="days" id="days"></div></div>
- <div class="card grid"><div><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>EMPLOYEES WORKING</label><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px"><div id="count" class="big">0</div><div style="text-align:right"><div class="muted" id="dayLaborLabel">LABOR COST AT 2 PM</div><div id="dayLabor" class="big" style="font-size:24px">$0.00</div></div></div></div></div>
+ <div class="card grid"><div><label>DATE</label><input id="selectedDate" type="date"><label>SHOW STAFF WORKING AT</label><select id="time"></select></div><div><label>SALES FOR THIS DATE ($)</label><input id="dailySales" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter daily sales"><div class="muted" id="dailyLaborSummary"></div></div></div>
+ <div class="card"><div id="hourSummary" class="name"></div><div id="roleSummary" class="muted" style="margin-top:8px"></div><div class="muted" id="laborBasis" style="margin-top:8px"></div></div>
  <div class="card" id="staff"></div>
  <div class="card"><h2 style="font-size:19px;margin:0 0 6px">Hourly staffing — <span id="hourlyDay">Monday</span></h2><p class="muted" style="margin:0 0 12px">Swipe the table sideways to see 6 AM–11 PM. Labor cost includes hourly pay for time worked in each hour.</p><div class="hourlyScroll" tabindex="0" aria-label="Hourly staffing table; scroll sideways"><table class="hourlyTable" id="hourlyTable"></table></div></div>
 </div>
@@ -67,6 +68,11 @@ function workingMinutes(shift,hour,notes){
  let covered=0,last=a;for(let [x,y] of absent){covered+=Math.max(0,y-Math.max(last,x));last=Math.max(last,y)}
  return Math.max(0,b-a-covered);
 }
+function dateForDay(d){let now=new Date(),delta=(D.indexOf(d)-(now.getDay()+6)%7+7)%7;now.setDate(now.getDate()+delta);return now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0")}
+function dayForDate(date){let [y,m,d]=date.split("-").map(Number);return D[(new Date(y,m-1,d).getDay()+6)%7]}
+function roleGroup(role){let r=String(role||"").toLowerCase();if(/salad/.test(r))return "Salad Bar";if(/dish/.test(r))return "Dishwasher";if(/prep/.test(r))return "Prep";if(/server|waiter|waitress/.test(r))return "Servers";if(/cook|chef/.test(r))return "Cooks";return "Other"}
+function laborAt(date,hour){let notes=(state.notes||[]).filter(n=>date>=n.startDate&&date<=n.endDate);return (state.schedule[day]||[]).reduce((sum,s)=>{let e=state.employees.find(x=>x.name===s.name)||{};return sum+(e.payType==="hourly"?Number(e.payAmount||0)*workingMinutes(s,hour,notes)/60:0)},0)}
+function dailyLabor(date){let total=0;for(let h=0;h<24;h++)total+=laborAt(date,h);return total}
 function renderHourlyTable(date){
  const hours=Array.from({length:18},(_,i)=>i+6),shifts=state.schedule[day]||[];
  const notes=(state.notes||[]).filter(n=>date>=n.startDate&&date<=n.endDate);
@@ -79,21 +85,24 @@ function renderHourlyTable(date){
 }
 function save(){window.tulanCloud?.commit(JSON.parse(JSON.stringify(state)))}
 function setView(v){viewMode=v;render()}
-function setDay(d){day=d;render()}
+function setDay(d){day=d;$("selectedDate").value=dateForDay(d);render()}
 function render(){
  $("views").innerHTML=["Day","Week","Month"].map(v=>`<button class="pill ${v==viewMode?"on":""}" data-v="${v}">${v}</button>`).join("");
  $("views").querySelectorAll("button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
  $("dayPanel").hidden=viewMode!="Day";$("weekPanel").hidden=viewMode!="Week";$("monthPanel").hidden=viewMode!="Month";
  $("days").innerHTML=D.map(d=>`<button class="pill ${d==day?"on":""}" data-d="${d}">${d}${(d=="Sat"||d=="Sun")?" • CLOSED":""}</button>`).join("");
  $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
- let t=$("time").value||"16:00", rows=(state.schedule[day]||[]).filter(x=>t>=x.start&&t<x.end);
- let now=new Date(),target=D.indexOf(day),todayIdx=(now.getDay()+6)%7,delta=(target-todayIdx+7)%7,dd=new Date(now);dd.setDate(now.getDate()+delta);let selectedDate=dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0");
- let abs=activeNotesAt(selectedDate,t),absNames=new Set(abs.map(n=>n.employee)),presentRows=rows.filter(x=>!absNames.has(x.name));
- $("count").textContent=presentRows.length;
- let hourLabor=presentRows.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};return e.payType==="hourly"?sum+Number(e.payAmount||0):sum},0);
- $("dayLaborLabel").textContent="LABOR COST AT "+fmt(t);
- $("dayLabor").textContent="$"+hourLabor.toFixed(2);
- $("absenceBanner").innerHTML=abs.length?`<div class="card" style="margin-bottom:12px"><b>Time off / absent for ${selectedDate}</b>${abs.map(n=>`<div class="muted">${esc(n.employee)} — ${esc(n.type)}${n.allDay=="yes"?" (all day)":" "+fmt(n.startTime)+"–"+fmt(n.endTime)}</div>`).join("")}</div>`:"";$("staff").innerHTML=(presentRows.length||rows.some(x=>absNames.has(x.name)))?rows.map(x=>{let a=abs.find(n=>n.employee==x.name);return `<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center;${a?"opacity:.55":""}"><div><div class="name">${esc(x.name)}${a?" — ABSENT":""}</div><div class="muted">${a?esc(a.type)+(a.note?" • "+esc(a.note):""):esc(x.role)}</div></div><b>${a?"OUT":fmt(x.start)+"–"+fmt(x.end)}</b></button>`}).join(""):'<span class="muted">No employees scheduled at this time.</span>';
+ let t=$("time").value||"16:00", selectedDate=$("selectedDate").value||dateForDay(day), hour=Number(t.slice(0,2));
+ let rows=(state.schedule[day]||[]).filter(x=>workingMinutes(x,hour,(state.notes||[]).filter(n=>selectedDate>=n.startDate&&selectedDate<=n.endDate))>0);
+ let abs=activeNotesAt(selectedDate,t);
+ let hourLabor=laborAt(selectedDate,hour),totalLabor=dailyLabor(selectedDate),sales=Number(state.salesByDate?.[selectedDate]||0);
+ $("dailySales").value=state.salesByDate?.[selectedDate]??"";
+ $("dailyLaborSummary").textContent=`Daily labor: $${totalLabor.toFixed(2)} • ${sales>0?(100*totalLabor/sales).toFixed(1)+"% of daily sales":"Enter sales to see daily labor %"}`;
+ $("hourSummary").textContent=`${fmt(t)} — ${rows.length} Staff — $${hourLabor.toFixed(2)}/hr — ${sales>0?(100*totalLabor/sales).toFixed(1)+"% Labor":"Labor % pending"}`;
+ let roleCounts=Object.fromEntries(["Servers","Cooks","Prep","Dishwasher","Salad Bar","Other"].map(x=>[x,0]));rows.forEach(x=>roleCounts[roleGroup(x.role||state.employees.find(e=>e.name===x.name)?.role)]++);
+ $("roleSummary").innerHTML=`Servers: ${roleCounts.Servers} | Cooks: ${roleCounts.Cooks} | Prep: ${roleCounts.Prep}<br>Dishwasher: ${roleCounts.Dishwasher} | Salad Bar: ${roleCounts["Salad Bar"]} | Other: ${roleCounts.Other}`;
+ $("laborBasis").textContent="Labor % = full-day hourly labor ÷ sales for this date. Salaried staff are excluded until an hourly allocation is defined.";
+ $("absenceBanner").innerHTML=abs.length?`<div class="card" style="margin-bottom:12px"><b>Time off / absent for ${selectedDate}</b>${abs.map(n=>`<div class="muted">${esc(n.employee)} — ${esc(n.type)}${n.allDay=="yes"?" (all day)":" "+fmt(n.startTime)+"–"+fmt(n.endTime)}</div>`).join("")}</div>`:"";$("staff").innerHTML=rows.length?rows.map(x=>`<button type="button" class="person" data-person="${esc(x.name)}" style="width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #ddd;padding:14px 0;display:flex;justify-content:space-between;align-items:center"><div><div class="name">${esc(x.name)}</div><div class="muted">${esc(x.role)}</div></div><b>${fmt(x.start)}–${fmt(x.end)}</b></button>`).join(""):'<span class="muted">No employees scheduled at this time.</span>';
  $("staff").querySelectorAll("[data-person]").forEach(b=>b.onclick=()=>openEmployeePopup(b.dataset.person));
  renderHourlyTable(selectedDate);
  let weekdays=D.slice(0,5); $("week").innerHTML="<table><thead><tr><th>Week</th>"+weekdays.map(d=>`<th>${d}</th>`).join("")+"</tr></thead><tbody><tr><th>Scheduled employees</th>"+weekdays.map(d=>{let dayShifts=(state.schedule[d]||[]);let labor=dayShifts.reduce((sum,x)=>{let e=state.employees.find(y=>y.name==x.name)||{};if(e.payType!=="hourly")return sum;let [sh,sm]=x.start.split(":").map(Number),[eh,em]=x.end.split(":").map(Number);let hours=((eh*60+em)-(sh*60+sm))/60;if(hours<0)hours+=24;return sum+hours*Number(e.payAmount||0)},0);return `<td>${dayShifts.length?dayShifts.map(x=>`<div style=\"margin-bottom:8px\"><b>${esc(x.name)}</b><div class=\"muted\">${esc(x.role)} • ${fmt(x.start)}–${fmt(x.end)}</div></div>`).join(""):`<span class=\"muted\">None</span>`}<div style=\"margin-top:10px;font-weight:800\">Total staff today: ${dayShifts.length}</div><div style=\"margin-top:6px;font-weight:800;color:var(--p)\">Total labor cost for ${d}: $${labor.toFixed(2)}</div></td>`}).join("")+"</tr></tbody></table>";
@@ -145,7 +154,11 @@ $("importBtn").onclick=()=>$("file").click();$("file").onchange=e=>{let f=e.targ
 $("exportBtn").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download="tulan-schedule-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 function renderCalendar(){let v=$("monthPick").value;if(!v)return;let [y,m]=v.split("-").map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),offset=(first.getDay()+6)%7,html="";["M","T","W","T","F","S","S"].forEach(x=>html+=`<div class="muted" style="text-align:center"><b>${x}</b></div>`);for(let i=0;i<offset;i++)html+="<div></div>";for(let n=1;n<=last.getDate();n++){let dow=(new Date(y,m-1,n).getDay()+6)%7,d=D[dow],cnt=(state.schedule[d]||[]).length;html+=`<button class="cell" data-date="${n}" type="button"><b>${n}</b><span class="badge">${cnt} staff</span></button>`}$("calendar").innerHTML=html;$("calendar").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("monthInfo").textContent=v+"-"+String(b.dataset.date).padStart(2,"0")+" • "+D[(new Date(y,m-1,+b.dataset.date).getDay()+6)%7]})}
 let now=new Date();$("monthPick").value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");$("monthPick").onchange=renderCalendar;
-for(let h=8;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`}$("time").onchange=render;render();
+for(let h=6;h<=23;h++){let v=String(h).padStart(2,"0")+":00";$("time").innerHTML+=`<option value="${v}" ${h==16?"selected":""}>${fmt(v)}</option>`}
+$("selectedDate").value=dateForDay(day);
+$("selectedDate").onchange=()=>{if(!$("selectedDate").value)return;day=dayForDate($("selectedDate").value);render()};
+$("dailySales").onchange=()=>{let raw=$("dailySales").value;if(raw!==""&&(!Number.isFinite(Number(raw))||Number(raw)<0))return alert("Enter a valid sales amount.");state.salesByDate=state.salesByDate||{};if(raw==="")delete state.salesByDate[$("selectedDate").value];else state.salesByDate[$("selectedDate").value]=Number(raw);save();render()};
+$("time").onchange=render;render();
 </script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
